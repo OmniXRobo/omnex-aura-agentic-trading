@@ -62,3 +62,7 @@ observations across more than one session, then design a separately reviewed his
 policy with date ranges and raw-time provenance. Do not reuse a present quote offset for
 old candles or remove the existing nonzero-offset history block. Until that gate passes,
 research may continue with labelled fixtures and historical broker acceptance stays pending.
+
+Update for 0.4.4: an independently reviewed, dated intraday history policy is now
+implemented; see [history policy](MT5_HISTORY_TIME_POLICY.md). Quote policy alone still
+does not authorize history conversion, and no UTC/DST rule is inferred by the probe.

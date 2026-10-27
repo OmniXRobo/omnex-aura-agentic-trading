@@ -13,7 +13,7 @@ from .collector import AccountBinding, Collector, MarketDataError
 from .market import Feed
 from .market_store import MarketStore
 from .store import Store
-from .time_policy import load_policy
+from .time_policy import load_history_policy, load_policy
 
 
 def main():
@@ -29,17 +29,21 @@ def main():
     parser.add_argument("--history-to")
     parser.add_argument("--timeframe", default="M1")
     parser.add_argument("--quote-time-policy", help="Reviewed local JSON policy; never auto-detected")
+    parser.add_argument("--history-time-policy", help="Reviewed dated candle policy JSON")
     args = parser.parse_args()
     try:
         time_policy = load_policy(args.quote_time_policy)
+        history_policy = load_history_policy(args.history_time_policy)
     except (OSError, ValueError):
-        parser.error("Invalid quote time policy file")
+        parser.error("Invalid quote or history time policy file")
     if sys.platform != "win32":
         parser.error("The official MT5 terminal connector must run on Windows")
     if not 0.2 <= args.interval <= 60:
         parser.error("Polling interval must be between 0.2 and 60 seconds")
     if bool(args.history_from) != bool(args.history_to):
         parser.error("Both history boundaries are required")
+    if args.history_time_policy and not args.history_from:
+        parser.error("History policy requires history boundaries")
     path = os.getenv("AURA_MT5_TERMINAL_PATH", "")
     server = os.getenv("AURA_MT5_EXPECTED_SERVER", "")
     login = os.getenv("AURA_MT5_EXPECTED_LOGIN", "")
@@ -67,6 +71,7 @@ def main():
                 args.timeframe,
                 datetime.fromisoformat(args.history_from),
                 datetime.fromisoformat(args.history_to),
+                history_policy=history_policy,
             )
             print(json.dumps(result))
             return

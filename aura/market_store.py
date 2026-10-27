@@ -31,6 +31,21 @@ CREATE TABLE IF NOT EXISTS feed_status (
  feed TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL, observed_msc INTEGER NOT NULL);
 INSERT OR IGNORE INTO schema_version VALUES (2);
 INSERT OR IGNORE INTO schema_version VALUES (5);
+INSERT OR IGNORE INTO schema_version VALUES (6);
+CREATE TABLE IF NOT EXISTS history_time_policies (
+ digest TEXT PRIMARY KEY, payload TEXT NOT NULL);
+CREATE TRIGGER IF NOT EXISTS history_policy_no_update BEFORE UPDATE ON history_time_policies
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
+CREATE TRIGGER IF NOT EXISTS history_policy_no_delete BEFORE DELETE ON history_time_policies
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
+CREATE TABLE IF NOT EXISTS history_time_bindings (
+ feed TEXT NOT NULL, symbol TEXT NOT NULL, timeframe TEXT NOT NULL,
+ start_utc INTEGER NOT NULL, end_utc INTEGER NOT NULL, offset_seconds INTEGER NOT NULL,
+ PRIMARY KEY(feed,symbol,timeframe,start_utc,end_utc,offset_seconds));
+CREATE TRIGGER IF NOT EXISTS history_binding_no_update BEFORE UPDATE ON history_time_bindings
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
+CREATE TRIGGER IF NOT EXISTS history_binding_no_delete BEFORE DELETE ON history_time_bindings
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
 """
 
 
@@ -85,6 +100,41 @@ class MarketStore:
                 db.execute(
                     "INSERT OR IGNORE INTO quote_time_policies VALUES (?,?)", (digest, payload)
                 )
+
+    def bind_history_time(self, feed, symbol, timeframe, start, end, offset, policy):
+        # Claim interpretation before reads/pages; interrupted claims remain conservative.
+        from .collector import MarketDataError
+
+        with self.store.connect("historical") as db:
+            db.execute("BEGIN IMMEDIATE")
+            rows = db.execute(
+                "SELECT start_utc,end_utc,offset_seconds FROM history_time_bindings "
+                "WHERE feed=? AND symbol=? AND timeframe=?",
+                (feed.key, symbol, timeframe),
+            ).fetchall()
+            for row in rows:
+                # Compare both UTC intervals and their raw transport intervals. This
+                # prevents one raw candle being reinterpreted as another UTC candle.
+                utc_overlap = start < row[1] and end > row[0]
+                raw_overlap = start + offset < row[1] + row[2] and end + offset > row[0] + row[2]
+                if row[2] != offset and (utc_overlap or raw_overlap):
+                    raise MarketDataError("History time interpretation conflicts with saved evidence",
+                                          "history_time_conflict")
+            for row in db.execute(
+                "SELECT payload FROM market_events WHERE feed=? AND symbol=? AND kind='candle'",
+                (feed.key, symbol),
+            ):
+                saved = json.loads(row[0])
+                if saved["timeframe"] == timeframe and saved.get("raw_open_time") is None and offset:
+                    raise MarketDataError("Legacy candle times cannot be silently reinterpreted",
+                                          "history_time_conflict")
+            db.execute("INSERT OR IGNORE INTO history_time_bindings VALUES (?,?,?,?,?,?)",
+                       (feed.key, symbol, timeframe, start, end, offset))
+            if policy is not None:
+                payload = policy.model_dump_json()
+                digest = hashlib.sha256(payload.encode()).hexdigest()
+                db.execute("INSERT OR IGNORE INTO history_time_policies VALUES (?,?)",
+                           (digest, payload))
 
     def append(self, feed: Feed, event: Quote | Candle | GoldContract, received_msc: int):
         payload = event.model_dump_json()

@@ -1,4 +1,4 @@
-# OMNEX AURA 0.4.3 — Read-only candle time evidence
+# OMNEX AURA 0.4.4 — Dated historical timestamp policy
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -127,3 +127,6 @@ Quote timestamp correction is optional, scoped and expires within 24 hours. See
 
 Use the [candle time probe](docs/MT5_CANDLE_TIME_PROBE.md) to gather bounded raw
 quote/candle comparisons without changing stream bindings or authorizing imports.
+
+MT5 history now requires an explicit [dated candle policy](docs/MT5_HISTORY_TIME_POLICY.md).
+Quote corrections alone never authorize candle conversion.
