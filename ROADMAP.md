@@ -5,7 +5,7 @@
 | 1 Foundation | PR #1 merged; Linux/Windows CI and audit passed | Production DB/auth and actual Windows VPS service validation |
 | 2 Market Data | PR #2 merged; collector and Linux/Windows CI verified with fixtures | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
 | 3 Trading Research | PR #3 merged; baseline backtests plus chronological validation/holdout ledger implemented | Real datasets, macro/news, robust statistical/market stress and ML leakage controls |
-| 4 Multi-Agent AI | Local framework checkpoint only | OpenAI/Claude/Grok adapters, secure credentials, provider cost/failure tests |
+| 4 Multi-Agent AI | Provider port, review workflow, durable quota/health and local/fake reliability tests implemented | Official OpenAI/Claude/Grok adapters, secure credentials, verified models and real API tests |
 | 5 Virtual Autopilot | Not started | Cost-aware fills, accounting, 2/3-day durable schedule |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
 | 7 MT5 Demo Autopilot | Not started / orders disabled | Owner demo activation, independent risk, reservation, reconciliation, fault recovery |
@@ -29,3 +29,7 @@ The M3 validation continuation adds expanding-window candidate selection, disjoi
 windows, a separately reserved final holdout, persistent exposure/reuse protection and
 explicitly limited IID trade-resampling diagnostics. It does not complete statistical
 strategy validation or enable promotion. See docs/CHRONOLOGICAL_VALIDATION.md.
+
+PR #4 is merged and its Linux/Windows tests/builds and dependency audits passed. The M4
+continuation implements only the provider-independent gateway and explicit local fallback;
+real external providers remain disabled/unimplemented. See docs/AGENT_GATEWAY.md.

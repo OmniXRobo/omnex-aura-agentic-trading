@@ -11,6 +11,8 @@ from .agents import AGENT_ROLES, Orchestrator, Snapshot
 from .backtest import BacktestRequest, ResearchConflict, persist_backtest
 from .config import Settings
 from .market_store import MarketStore
+from .review_types import ReviewContext
+from .reviews import ReviewCoordinator, default_gateway
 from .risk import Proposal
 from .store import Store
 from .validation import HoldoutConflict, ValidationRequest, persist_validation
@@ -28,6 +30,7 @@ def create_app(settings: Settings | None = None):
     async def lifespan(app):
         app.state.store = Store(settings.data_dir)
         app.state.market = MarketStore(app.state.store)
+        app.state.reviews = ReviewCoordinator(app.state.store, default_gateway(app.state.store))
         yield
 
     app = FastAPI(
@@ -100,6 +103,14 @@ def create_app(settings: Settings | None = None):
             return persist_validation(app.state.store, request)
         except (HoldoutConflict, ResearchConflict) as error:
             raise HTTPException(409, str(error)) from None
+
+    @app.post("/v1/research/review", dependencies=[Depends(admin)])
+    async def review(request: ReviewContext):
+        return await app.state.reviews.run(request)
+
+    @app.get("/v1/providers/status", dependencies=[Depends(identity)])
+    def providers():
+        return app.state.reviews.statuses()
 
     @app.post("/v1/risk/preview", dependencies=[Depends(admin)])
     def risk(proposal: Proposal):

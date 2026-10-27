@@ -1,4 +1,4 @@
-# OMNEX AURA 0.3.1 — research validation checkpoint
+# OMNEX AURA 0.4.0 — agent gateway foundation
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -101,3 +101,14 @@ on overlapping final intervals is blocked. Previously explored backtest interval
 be called an unseen holdout. See docs/CHRONOLOGICAL_VALIDATION.md for the boundary details,
 IID-bootstrap limitations and scope. All promotion/execution remains disabled. PR #3 is
 merged and all its Linux/Windows CI and dependency-audit jobs passed.
+
+## Provider-independent review gateway (M4 checkpoint)
+
+`python -m aura.review --request examples/review_fixture.json --data-dir ./data` runs
+three deterministic local review perspectives. The admin API is `/v1/research/review`;
+authenticated users can inspect `/v1/providers/status`. The gateway adds bounded retries,
+timeouts, declared failover routes, schema/provenance checks, durable quota reservations,
+circuit health and short-lived caching. External provider adapters/credentials remain
+unimplemented; status reports that explicitly. No paid API is called and no model
+agreement enables trading. See docs/AGENT_GATEWAY.md for limits and tests. PR #4's Linux/
+Windows CI and dependency audits passed; this is not full M4 or deployment completion.
