@@ -129,3 +129,14 @@ and explicit unknown-billing reporting.
 These do not establish real API connectivity, independent multi-LLM analysis, genuine
 billing enforcement or predictive ability. External adapters, keys, model access/pricing,
 provider-specific tokenization, invoice reconciliation and all broker gates remain pending.
+
+## MT5 diagnostic regression coverage
+
+D01..D11 in tests/test_mt5_diagnostics.py cover 15 scenarios: wrong claimed login cannot
+reserve a stream; server/demo/disconnect guards run before persistence; a verified
+changed account cannot overwrite an existing stream; stale/future/invalid quote errors
+are specific; contract errors identify field names without raw inputs; diagnosis is
+read-only and hides account numbers; identity-vs-freshness issues are distinct; invalid
+contract fields are visible; real accounts stop further symbol reads; account switches
+are detected; native exception details are sanitized. Actual VPS quote collection still
+requires operator-run diagnostics and a successful collection result.

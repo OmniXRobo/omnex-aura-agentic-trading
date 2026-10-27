@@ -189,7 +189,7 @@ def test_m2_06_quote_dedupe_and_same_millisecond_changes(setup):
 
 def test_m2_07_stream_cannot_mix_accounts(setup):
     collector, terminal, memory = setup
-    with pytest.raises(ValueError, match="another account"):
+    with pytest.raises(MarketDataError, match="configured login"):
         Collector(terminal, memory, FEED, AccountBinding(67890, "Fixture-Demo"))
     assert "12345" not in repr(collector.binding)
     assert "Fixture-Demo" not in repr(collector.binding)
