@@ -85,3 +85,18 @@ Fixtures do not establish broker compatibility. The MT5 port has never been used
 submit an order. All original trading-specific statistical and execution acceptance
 gates remain pending. PR #1 now supplies actual Windows/Linux backend CI evidence;
 this does not prove Windows VPS/MT5 terminal integration.
+
+## M3 research acceptance mapping
+
+`tests/test_research.py` uses M3-01..M3-22 (28 parameterized scenarios). IDs cover:
+feature math/warmup; causal prefix invariance; flat RSI/ATR/bands; dataset chronology;
+configuration/cost rejection; next-bar and stop-first fills; long/short executable prices;
+adverse gaps; risk rounding/cost budget; swap/exit-bound approximation; no-trade/minimum
+volume; spread/gap rejection; one position and no backdated reentry; closed-trade drawdown
+halt; metric edge cases; reproducible input hashes; historical-only persistence; causal
+channel breakout; API authorization; invalid fill-price rejection; and fixture CLI execution.
+
+These prove local research-engine behavior, not market profitability. Monte Carlo,
+fresh out-of-sample/walk-forward evaluation, confidence intervals, macro/news input,
+ML calibration and broker-data preparation remain pending. Backtest results always have
+promotion_eligible=false and execution_allowed=false.

@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 
 from . import __version__
 from .agents import AGENT_ROLES, Orchestrator, Snapshot
+from .backtest import BacktestRequest, persist_backtest
 from .config import Settings
 from .market_store import MarketStore
 from .risk import Proposal
@@ -84,6 +85,10 @@ def create_app(settings: Settings | None = None):
     @app.post("/v1/research/run", dependencies=[Depends(admin)])
     async def research(snapshot: Snapshot):
         return await Orchestrator(app.state.store).run(snapshot)
+
+    @app.post("/v1/research/backtest", dependencies=[Depends(admin)])
+    def backtest(request: BacktestRequest):
+        return persist_backtest(app.state.store, request)
 
     @app.post("/v1/risk/preview", dependencies=[Depends(admin)])
     def risk(proposal: Proposal):

@@ -1,4 +1,4 @@
-# OMNEX AURA 0.2.0 — read-only market data checkpoint
+# OMNEX AURA 0.3.0 — offline research checkpoint
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -79,3 +79,15 @@ Source is public by the owner's instruction. PR #1 was merged and its Linux/Wind
 and dependency audit passed. The original M1 report is a historical checkpoint; current
 progress is recorded in reports/MILESTONE_2.md. M2 still needs actual Windows/broker
 acceptance. No provider credentials or broker passwords are required for fixture tests.
+
+## Offline research (M3)
+
+Run `python -m aura.research --request examples/backtest_fixture.json --data-dir ./data`
+to exercise the synthetic research fixture. It tests causal technical features, two
+baseline candidate strategies, next-bar fills and explicit cost assumptions. Admins
+can also POST the same body to `/v1/research/backtest`. Results stay in historical memory
+and always reject promotion/execution. See docs/RESEARCH_BACKTEST.md for model limitations.
+PR #2 is merged and all its Windows/Linux CI and dependency checks passed; real Windows
+MT5 connection verification is still pending. The research pipeline does not require
+that connection or external provider credentials. This is a research checkpoint, not
+full M3 completion or an adaptive trading release.
