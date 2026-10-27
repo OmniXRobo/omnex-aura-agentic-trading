@@ -33,3 +33,7 @@ strategy validation or enable promotion. See docs/CHRONOLOGICAL_VALIDATION.md.
 PR #4 is merged and its Linux/Windows tests/builds and dependency audits passed. The M4
 continuation implements only the provider-independent gateway and explicit local fallback;
 real external providers remain disabled/unimplemented. See docs/AGENT_GATEWAY.md.
+
+M2 timestamp continuation: scoped expiring quote corrections preserve raw time and policy
+evidence. UTC remains default. Nonzero correction blocks historical imports pending
+independent candle-time verification. Actual VPS acceptance remains pending.

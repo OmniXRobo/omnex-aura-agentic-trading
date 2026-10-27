@@ -1,4 +1,4 @@
-# OMNEX AURA 0.4.1 — MT5 diagnostic repair
+# OMNEX AURA 0.4.2 — Explicit quote timestamp policy
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -121,3 +121,6 @@ terminal/login/server environment. The diagnostic performs no stream/database wr
 and reveals identity match booleans, contract failures and quote age instead of the
 login number. See docs/MT5_TROUBLESHOOTING.md. The collector verifies identity before
 saving a new binding; existing bindings are never silently overwritten.
+
+Quote timestamp correction is optional, scoped and expires within 24 hours. See
+[MT5 timestamp policy](docs/MT5_TIME_POLICY.md). No offset is inferred automatically.

@@ -10,9 +10,10 @@ import time
 from pydantic import ValidationError
 
 from .market import GoldContract, Quote
+from .time_policy import load_policy
 
 
-def report_terminal(port, symbol, expected_login=None, expected_server=None, now_msc=None):
+def report_terminal(port, symbol, expected_login=None, expected_server=None, now_msc=None, time_policy=None):
     result = {"symbol": symbol, "execution_allowed": False, "stream_modified": False}
     try:
         account, terminal = port.account_info(), port.terminal_info()
@@ -51,6 +52,19 @@ def report_terminal(port, symbol, expected_login=None, expected_server=None, now
                 symbol=symbol,
                 **{k: getattr(tick, k, None) for k in ("time_msc", "bid", "ask", "flags")},
             )
+            result["raw_time_msc"] = quote.time_msc
+            result["system_utc_msc"] = now_msc
+            result["raw_tick_age_seconds"] = (now_msc - quote.time_msc) / 1000
+            if time_policy is not None:
+                try:
+                    corrected = time_policy.normalize(
+                        quote.time_msc, now_msc, account.server, symbol
+                    )
+                except ValueError:
+                    return result | {"error": "time_policy_invalid", "terminal_checks_passed": False}
+                quote = quote.model_copy(update={"time_msc": corrected})
+                result["time_offset_seconds"] = time_policy.offset_seconds
+                result["history_time_verified"] = False
             result["tick_age_seconds"] = (now_msc - quote.time_msc) / 1000
             result["quote_valid"] = True
             result["quote_fresh"] = 0 <= now_msc - quote.time_msc <= 5000
@@ -83,7 +97,12 @@ def main():
         description="Read-only demo terminal diagnostics; no database writes"
     )
     parser.add_argument("--symbol", required=True)
+    parser.add_argument("--quote-time-policy", help="Reviewed local JSON policy; never auto-detected")
     args = parser.parse_args()
+    try:
+        time_policy = load_policy(args.quote_time_policy)
+    except (OSError, ValueError):
+        parser.error("Invalid quote time policy file")
     if sys.platform != "win32":
         parser.error("Run on the Windows MT5 VPS")
     path = os.getenv("AURA_MT5_TERMINAL_PATH", "")
@@ -99,7 +118,10 @@ def main():
     try:
         print(
             json.dumps(
-                report_terminal(port, args.symbol, int(login) if login else None, server or None),
+                report_terminal(
+                    port, args.symbol, int(login) if login else None, server or None,
+                    time_policy=time_policy,
+                ),
                 indent=2,
                 allow_nan=False,
             )

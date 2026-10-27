@@ -63,12 +63,20 @@ class GoldContract(MarketModel):
 class Quote(MarketModel):
     symbol: str = Field(min_length=1, max_length=64)
     time_msc: int = Field(gt=0)
+    raw_time_msc: int | None = Field(default=None, gt=0)
+    time_offset_seconds: int = Field(default=0, ge=-50400, le=50400)
+    time_policy: str | None = Field(default=None, max_length=64)
     bid: float = Field(gt=0)
     ask: float = Field(gt=0)
     flags: int = Field(ge=0)
 
     @model_validator(mode="after")
     def uncrossed(self):
+        if self.raw_time_msc is not None:
+            if self.time_msc != self.raw_time_msc - self.time_offset_seconds * 1000:
+                raise ValueError("Quote time provenance is inconsistent")
+        elif self.time_offset_seconds or self.time_policy is not None:
+            raise ValueError("Corrected quotes require raw time")
         if self.ask < self.bid:
             raise ValueError("Crossed quote")
         return self

@@ -140,3 +140,7 @@ read-only and hides account numbers; identity-vs-freshness issues are distinct; 
 contract fields are visible; real accounts stop further symbol reads; account switches
 are detected; native exception details are sanitized. Actual VPS quote collection still
 requires operator-run diagnostics and a successful collection result.
+
+Timestamp regression gate: `tests/test_time_policy.py` T01–T11 checks normalization,
+provenance, persistence, strict five-second freshness, scope/expiry, history blocking,
+and stream isolation. This is fixture evidence, not broker acceptance.

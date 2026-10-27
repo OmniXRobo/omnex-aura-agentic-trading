@@ -1,5 +1,6 @@
 """Read-only MT5 collection. No order placement, login or provider APIs."""
 
+import hashlib
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -55,8 +56,10 @@ class Collector:
         feed: Feed,
         binding: AccountBinding,
         clock=None,
+        time_policy=None,
     ):
         self.terminal, self.memory, self.feed, self.binding = terminal, memory, feed, binding
+        self.time_policy = time_policy
         self.clock = clock or (lambda: int(time.time() * 1000))
         # Do not persist a claimed account before verifying the actual terminal.
         self.guard()
@@ -130,6 +133,21 @@ class Collector:
     def quote(self, symbol):
         raw = self._call(self.terminal.symbol_info_tick, symbol)
         data = _fields(raw, ["time_msc", "bid", "ask", "flags"])
+        if self.time_policy is not None:
+            try:
+                normalized = self.time_policy.normalize(
+                    data["time_msc"], self.clock(), self.binding.server, symbol
+                )
+            except ValueError:
+                raise MarketDataError(
+                    "Quote time policy expired or mismatched", "time_policy_invalid"
+                ) from None
+            data.update(
+                raw_time_msc=data["time_msc"],
+                time_msc=normalized,
+                time_offset_seconds=self.time_policy.offset_seconds,
+                time_policy=hashlib.sha256(self.time_policy.model_dump_json().encode()).hexdigest(),
+            )
         try:
             quote = Quote(symbol=symbol, **data)
         except ValidationError:
@@ -139,6 +157,13 @@ class Collector:
 
     def _fresh(self, quote):
         now = self.clock()
+        if self.time_policy is not None:
+            try:
+                self.time_policy.normalize(
+                    quote.raw_time_msc, now, self.binding.server, quote.symbol
+                )
+            except ValueError:
+                raise MarketDataError("Quote time policy expired", "time_policy_invalid") from None
         if quote.time_msc > now:
             raise MarketDataError("Quote timestamp is ahead of the VPS clock", "future_tick")
         if now - quote.time_msc > 5000:
@@ -154,6 +179,7 @@ class Collector:
             self.guard()
             now = self.clock()
             self._fresh(quote)
+            self.memory.bind_quote_time(self.feed, quote.time_offset_seconds, self.time_policy)
             self.memory.append(self.feed, contract, now)
             inserted = self.memory.append(self.feed, quote, now)
             self.memory.set_status(self.feed, "healthy", "Fresh demo quote collected", now)
@@ -171,6 +197,13 @@ class Collector:
             ) from None
 
     def history(self, symbol, timeframe, start: datetime, end: datetime, page_bars=500):
+        if (self.time_policy is not None and self.time_policy.offset_seconds) or (
+            self.memory.quote_time_offset(self.feed) != 0
+        ):
+            raise MarketDataError(
+                "Quote correction does not verify candle timestamps; history is blocked",
+                "history_time_unverified",
+            )
         if timeframe not in TIMEFRAMES or not 1 <= page_bars <= 5000:
             raise ValueError("Invalid timeframe or page size")
         if start.tzinfo is None or end.tzinfo is None:
