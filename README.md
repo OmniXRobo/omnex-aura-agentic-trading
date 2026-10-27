@@ -1,4 +1,4 @@
-# OMNEX AURA 0.4.0 — agent gateway foundation
+# OMNEX AURA 0.4.1 — MT5 diagnostic repair
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -112,3 +112,12 @@ circuit health and short-lived caching. External provider adapters/credentials r
 unimplemented; status reports that explicitly. No paid API is called and no model
 agreement enables trading. See docs/AGENT_GATEWAY.md for limits and tests. PR #4's Linux/
 Windows CI and dependency audits passed; this is not full M4 or deployment completion.
+
+## Read-only MT5 troubleshooting
+
+If collection reports an account/stream mismatch or a vague data failure, use
+`python -m aura.diagnose --symbol XAUUSD` on the Windows VPS with the same expected
+terminal/login/server environment. The diagnostic performs no stream/database writes
+and reveals identity match booleans, contract failures and quote age instead of the
+login number. See docs/MT5_TROUBLESHOOTING.md. The collector verifies identity before
+saving a new binding; existing bindings are never silently overwritten.

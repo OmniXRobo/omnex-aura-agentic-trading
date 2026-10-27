@@ -5,12 +5,16 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Protocol
 
+from pydantic import ValidationError
+
 from .market import TIMEFRAMES, Candle, Feed, GoldContract, Quote
 from .market_store import MarketStore
 
 
 class MarketDataError(RuntimeError):
-    pass
+    def __init__(self, message, code="market_data_error"):
+        super().__init__(message)
+        self.code = code
 
 
 class ReadOnlyTerminal(Protocol):
@@ -54,23 +58,49 @@ class Collector:
     ):
         self.terminal, self.memory, self.feed, self.binding = terminal, memory, feed, binding
         self.clock = clock or (lambda: int(time.time() * 1000))
-        self.memory.bind(feed, binding.login, binding.server)
+        # Do not persist a claimed account before verifying the actual terminal.
+        self.guard()
+        try:
+            self.memory.bind(feed, binding.login, binding.server)
+        except ValueError:
+            raise MarketDataError(
+                "Stream belongs to another verified account; do not overwrite it",
+                "stream_binding_conflict",
+            ) from None
 
     def guard(self):
-        account, terminal = self.terminal.account_info(), self.terminal.terminal_info()
-        if account is None or terminal is None or not terminal.connected:
-            raise MarketDataError("Terminal disconnected")
-        if account.trade_mode != self.terminal.ACCOUNT_TRADE_MODE_DEMO:
-            raise MarketDataError("Only verified demo accounts are permitted")
-        if account.login != self.binding.login or account.server != self.binding.server:
-            raise MarketDataError("Account binding changed")
+        try:
+            account, terminal = self.terminal.account_info(), self.terminal.terminal_info()
+            if account is None or terminal is None or not terminal.connected:
+                raise MarketDataError(
+                    "Terminal/account is disconnected or unavailable", "disconnected"
+                )
+            if account.trade_mode != self.terminal.ACCOUNT_TRADE_MODE_DEMO:
+                raise MarketDataError("Only verified demo accounts are permitted", "not_demo")
+            if account.server != self.binding.server:
+                raise MarketDataError(
+                    "Actual server does not match the configured server", "server_mismatch"
+                )
+            if account.login != self.binding.login:
+                raise MarketDataError(
+                    "Actual demo login does not match the configured login", "login_mismatch"
+                )
+        except MarketDataError:
+            raise
+        except Exception:
+            raise MarketDataError(
+                "Terminal identity cannot be read safely", "terminal_read_failed"
+            ) from None
 
     def _call(self, method, *args):
         self.guard()
-        value = method(*args)
+        try:
+            value = method(*args)
+        except Exception:
+            raise MarketDataError("Native terminal read failed", "native_read_failed") from None
         self.guard()
         if value is None:
-            raise MarketDataError("Broker data unavailable")
+            raise MarketDataError("Broker data unavailable", "data_unavailable")
         return value
 
     def discover(self):
@@ -86,7 +116,13 @@ class Collector:
         raw = self._call(self.terminal.symbol_info, symbol)
         values = _fields(raw, [key for key in GoldContract.model_fields if key != "symbol"])
         values["symbol"] = raw.name
-        contract = GoldContract.model_validate(values)
+        try:
+            contract = GoldContract.model_validate(values)
+        except ValidationError as error:
+            fields = sorted({str(item["loc"][0]) for item in error.errors(include_input=False)})
+            raise MarketDataError(
+                "Invalid contract fields: " + ", ".join(fields), "contract_invalid"
+            ) from None
         if contract.symbol != symbol:
             raise MarketDataError("Broker returned a different symbol")
         return contract
@@ -94,9 +130,22 @@ class Collector:
     def quote(self, symbol):
         raw = self._call(self.terminal.symbol_info_tick, symbol)
         data = _fields(raw, ["time_msc", "bid", "ask", "flags"])
-        quote = Quote(symbol=symbol, **data)
-        quote.require_fresh(self.clock())
+        try:
+            quote = Quote(symbol=symbol, **data)
+        except ValidationError:
+            raise MarketDataError("Quote prices/timestamp are invalid", "quote_invalid") from None
+        self._fresh(quote)
         return quote
+
+    def _fresh(self, quote):
+        now = self.clock()
+        if quote.time_msc > now:
+            raise MarketDataError("Quote timestamp is ahead of the VPS clock", "future_tick")
+        if now - quote.time_msc > 5000:
+            raise MarketDataError(
+                "Quote is older than five seconds; check the symbol/feed and market session",
+                "stale_tick",
+            )
 
     def poll(self, symbol):
         try:
@@ -104,11 +153,14 @@ class Collector:
             quote = self.quote(symbol)
             self.guard()
             now = self.clock()
-            quote.require_fresh(now)
+            self._fresh(quote)
             self.memory.append(self.feed, contract, now)
             inserted = self.memory.append(self.feed, quote, now)
             self.memory.set_status(self.feed, "healthy", "Fresh demo quote collected", now)
             return {"inserted": inserted, "execution_allowed": False}
+        except MarketDataError as error:
+            self.memory.set_status(self.feed, "blocked", error.code, self.clock())
+            raise
         except Exception:
             # Never echo broker exceptions: they may contain account details or credentials.
             self.memory.set_status(

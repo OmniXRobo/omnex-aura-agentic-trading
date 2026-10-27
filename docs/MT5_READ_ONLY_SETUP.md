@@ -125,3 +125,8 @@ Official integration references:
 - https://www.mql5.com/en/docs/python_metatrader5/mt5copyratesrange_py
 - https://www.mql5.com/en/docs/python_metatrader5/mt5symbolinfo_py
 - https://www.mql5.com/en/docs/python_metatrader5/mt5symbolinfotick_py
+
+For login, stream-conflict or quote/contract errors, follow MT5_TROUBLESHOOTING.md before
+retrying. In 0.4.1, `python -m aura.diagnose --symbol XAUUSD` can inspect the terminal
+without binding any stream or writing market data. Do not replace an Equiti login with
+a login from a separately running MetaQuotes terminal.

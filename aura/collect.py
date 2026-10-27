@@ -67,7 +67,13 @@ def main():
             try:
                 print(json.dumps(collector.poll(args.symbol)), flush=True)
             except MarketDataError as error:
-                print(str(error), file=sys.stderr, flush=True)
+                print(
+                    json.dumps(
+                        {"error": error.code, "message": str(error), "execution_allowed": False}
+                    ),
+                    file=sys.stderr,
+                    flush=True,
+                )
                 if not args.watch:
                     raise SystemExit(1) from None
             if not args.watch:
@@ -75,6 +81,16 @@ def main():
             # Re-check terminal health and account binding on every loop. The supervisor
             # must restart the process if the native terminal session needs reinitialization.
             time.sleep(args.interval)
+    except MarketDataError as error:
+        print(
+            json.dumps({"error": error.code, "message": str(error), "execution_allowed": False}),
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
+    except ValueError:
+        raise SystemExit(
+            "Invalid collector configuration or history request; no orders are enabled"
+        ) from None
     finally:
         mt5.shutdown()
 
