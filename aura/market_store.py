@@ -19,9 +19,18 @@ CREATE TRIGGER IF NOT EXISTS market_no_delete BEFORE DELETE ON market_events
 CREATE INDEX IF NOT EXISTS market_lookup ON market_events(feed,symbol,kind,event_time);
 CREATE TABLE IF NOT EXISTS feed_bindings (
  feed TEXT PRIMARY KEY, fingerprint TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS quote_time_policies (
+ digest TEXT PRIMARY KEY, payload TEXT NOT NULL);
+CREATE TRIGGER IF NOT EXISTS quote_policy_no_update BEFORE UPDATE ON quote_time_policies
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
+CREATE TRIGGER IF NOT EXISTS quote_policy_no_delete BEFORE DELETE ON quote_time_policies
+ BEGIN SELECT RAISE(ABORT, 'append only'); END;
+CREATE TABLE IF NOT EXISTS quote_time_bindings (
+ feed TEXT PRIMARY KEY, offset_seconds INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS feed_status (
  feed TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL, observed_msc INTEGER NOT NULL);
 INSERT OR IGNORE INTO schema_version VALUES (2);
+INSERT OR IGNORE INTO schema_version VALUES (5);
 """
 
 
@@ -40,6 +49,42 @@ class MarketStore:
             ).fetchone()
             if row[0] != fingerprint:
                 raise ValueError("Feed already belongs to another account; choose a new stream")
+
+    def quote_time_offset(self, feed):
+        with self.store.connect("historical") as db:
+            row = db.execute(
+                "SELECT offset_seconds FROM quote_time_bindings WHERE feed=?", (feed.key,)
+            ).fetchone()
+            return row[0] if row else 0
+
+    def bind_quote_time(self, feed, offset_seconds, policy=None):
+        # Account-bound stream cannot silently change its time interpretation.
+        with self.store.connect("historical") as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT offset_seconds FROM quote_time_bindings WHERE feed=?", (feed.key,)
+            ).fetchone()
+            legacy = db.execute(
+                "SELECT 1 FROM market_events WHERE feed=? AND kind='quote' LIMIT 1", (feed.key,)
+            ).fetchone()
+            if (row is not None and row[0] != offset_seconds) or (
+                row is None and legacy is not None and offset_seconds != 0
+            ):
+                from .collector import MarketDataError
+
+                raise MarketDataError(
+                    "Stream time interpretation differs; preserve it and use a reviewed new stream",
+                    "stream_time_conflict",
+                )
+            db.execute(
+                "INSERT OR IGNORE INTO quote_time_bindings VALUES (?,?)", (feed.key, offset_seconds)
+            )
+            if policy is not None:
+                payload = policy.model_dump_json()
+                digest = hashlib.sha256(payload.encode()).hexdigest()
+                db.execute(
+                    "INSERT OR IGNORE INTO quote_time_policies VALUES (?,?)", (digest, payload)
+                )
 
     def append(self, feed: Feed, event: Quote | Candle | GoldContract, received_msc: int):
         payload = event.model_dump_json()

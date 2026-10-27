@@ -13,6 +13,7 @@ from .collector import AccountBinding, Collector, MarketDataError
 from .market import Feed
 from .market_store import MarketStore
 from .store import Store
+from .time_policy import load_policy
 
 
 def main():
@@ -27,7 +28,12 @@ def main():
     parser.add_argument("--history-from")
     parser.add_argument("--history-to")
     parser.add_argument("--timeframe", default="M1")
+    parser.add_argument("--quote-time-policy", help="Reviewed local JSON policy; never auto-detected")
     args = parser.parse_args()
+    try:
+        time_policy = load_policy(args.quote_time_policy)
+    except (OSError, ValueError):
+        parser.error("Invalid quote time policy file")
     if sys.platform != "win32":
         parser.error("The official MT5 terminal connector must run on Windows")
     if not 0.2 <= args.interval <= 60:
@@ -48,6 +54,7 @@ def main():
             MarketStore(Store(args.data_dir)),
             Feed(broker=args.broker, source="mt5_demo", stream=args.stream),
             AccountBinding(int(login), server),
+            time_policy=time_policy,
         )
         if args.discover:
             print(json.dumps({"candidates": collector.discover(), "execution_allowed": False}))
