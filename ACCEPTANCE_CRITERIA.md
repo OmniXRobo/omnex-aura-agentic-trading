@@ -114,3 +114,18 @@ admin API/409 behavior, CLI replay, disabled promotion and label/timeframe bypas
 These tests do not establish market profitability or full ML leakage safety. Final
 holdout protection operates within this persisted application workflow. IID-resampling
 outputs remain research diagnostics. Live/provider/VPS acceptance gates are unchanged.
+
+## M4 gateway acceptance mapping
+
+G01..G24 in `tests/test_gateway.py` cover 31 scenarios: valid replies and durable usage;
+transient retry/failover; timeout; executable-authority/schema rejection; malformed reply
+handling; disabled/missing/input gates; rate/token/cost quota reservations; circuit
+restart/recovery; cache TTL/model identity; provenance/usage bounds; sanitized errors;
+atomic quotas; fallback context isolation; cancellation; three local perspectives with
+NO TRADE; role failure/configuration; API authorization/server-owned routes; state/cache
+failures; local adapter impersonation rejection; CLI behavior; bounded concurrency;
+and explicit unknown-billing reporting.
+
+These do not establish real API connectivity, independent multi-LLM analysis, genuine
+billing enforcement or predictive ability. External adapters, keys, model access/pricing,
+provider-specific tokenization, invoice reconciliation and all broker gates remain pending.

@@ -1,0 +1,9 @@
+{
+  "snapshot": {
+    "symbol": "XAUUSD",
+    "prices": [3000, 3001, 3002],
+    "tick_age_seconds": 1,
+    "source": "fixture"
+  },
+  "hypothesis": "Evaluate whether this synthetic sample provides enough evidence for a trading hypothesis."
+}
