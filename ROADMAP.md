@@ -3,8 +3,8 @@
 | Milestone | Status | Remaining acceptance gate |
 | --- | --- | --- |
 | 1 Foundation | PR #1 merged; Linux/Windows CI and audit passed | Production DB/auth and actual Windows VPS service validation |
-| 2 Market Data | Read-only collector, validated snapshots/history, API and fixtures implemented | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
-| 3 Trading Research | Not started | Indicators, strategies, backtest and statistical validation |
+| 2 Market Data | PR #2 merged; collector and Linux/Windows CI verified with fixtures | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
+| 3 Trading Research | Causal features, two baseline candidates and offline cost-aware backtests implemented | Real dataset preparation, macro/news, walk-forward/OOS and statistical validation |
 | 4 Multi-Agent AI | Local framework checkpoint only | OpenAI/Claude/Grok adapters, secure credentials, provider cost/failure tests |
 | 5 Virtual Autopilot | Not started | Cost-aware fills, accounting, 2/3-day durable schedule |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
@@ -20,3 +20,7 @@ on Linux/Windows with Python 3.11/3.12 in CI.
 Next gate: verify the M2 collector on the actual Windows VPS using
 docs/MT5_READ_ONLY_SETUP.md. Broker-connected runtime remains unverified here. Research
 can continue with fixtures; no demo order execution is enabled.
+
+M3 research fixtures may run before Windows broker acceptance. They must remain labelled
+synthetic/in-sample and cannot promote a strategy or enable broker execution. See
+reports/MILESTONE_3.md and docs/RESEARCH_BACKTEST.md for scope and evidence.
