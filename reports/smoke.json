@@ -1,0 +1,6 @@
+{
+  "http_process_smoke": "passed",
+  "restart_memory": "passed",
+  "offline_cli_stop": "passed",
+  "live_enabled": false
+}

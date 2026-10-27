@@ -1,0 +1,3 @@
+include ARCHITECTURE.md ROADMAP.md ACCEPTANCE_CRITERIA.md AGENTS.md requirements.lock .env.example
+recursive-include docs *.md
+recursive-include scripts *.py *.ps1
