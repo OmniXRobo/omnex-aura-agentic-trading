@@ -149,3 +149,8 @@ Candle timestamp evidence: `tests/test_candle_probe.py` C01–C12 checks indepen
 quote/candle relationships, bounded reads, identity checks, malformed data, range
 disagreement, safe errors, clock regression and a Windows CLI fixture with no files
 created. No fixture result verifies a broker timezone or authorizes history ingestion.
+
+Dated history correction: `tests/test_history_time_policy.py` H01–H14 checks shifted
+queries, persistent raw/UTC provenance, page replay, interval/scope gates, closed bars,
+UTC/raw overlap conflicts, restart/legacy/concurrency protection, append-only evidence,
+and the Windows CLI with a fake terminal. Actual broker import acceptance is pending.

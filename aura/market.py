@@ -91,6 +91,9 @@ class Candle(MarketModel):
     symbol: str = Field(min_length=1, max_length=64)
     timeframe: Literal["M1", "M5", "M10", "M15", "M30", "H1", "H4", "D1"]
     open_time: int = Field(gt=0)
+    raw_open_time: int | None = Field(default=None, gt=0)
+    time_offset_seconds: int = Field(default=0, ge=-50400, le=50400)
+    time_policy: str | None = Field(default=None, max_length=64)
     open: float = Field(gt=0)
     high: float = Field(gt=0)
     low: float = Field(gt=0)
@@ -101,6 +104,11 @@ class Candle(MarketModel):
 
     @model_validator(mode="after")
     def valid_range(self):
+        if self.raw_open_time is not None:
+            if self.open_time != self.raw_open_time - self.time_offset_seconds:
+                raise ValueError("Candle time provenance is inconsistent")
+        elif self.time_offset_seconds or self.time_policy is not None:
+            raise ValueError("Corrected candles require raw time")
         if self.low > min(self.open, self.close) or self.high < max(self.open, self.close):
             raise ValueError("OHLC range is inconsistent")
         if self.low > self.high:

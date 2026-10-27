@@ -41,3 +41,9 @@ independent candle-time verification. Actual VPS acceptance remains pending.
 PR #7 is merged; its Linux/Windows CI and dependency audits passed. A read-only candle
 time probe now collects bounded position/range comparisons independently of quote
 correction. Actual candle timing, DST rules and history acceptance remain unverified.
+
+PR #8 is merged. M2 now supports operator-attested intraday history policies scoped to a
+server/symbol/timeframe and a dated interval, with raw/UTC provenance and restart-safe
+interpretation reservations. MT5 imports require explicit history evidence, including
+offset-zero policies. D1 remains unsupported by this correction path. Actual VPS
+import/replay acceptance, broader dated evidence and DST rules remain pending.

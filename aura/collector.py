@@ -196,12 +196,15 @@ class Collector:
                 "Collection failed; check demo binding, metadata and freshness"
             ) from None
 
-    def history(self, symbol, timeframe, start: datetime, end: datetime, page_bars=500):
-        if (self.time_policy is not None and self.time_policy.offset_seconds) or (
-            self.memory.quote_time_offset(self.feed) != 0
+    def history(self, symbol, timeframe, start: datetime, end: datetime, page_bars=500,
+                history_policy=None):
+        if history_policy is None and (
+            self.feed.source == "mt5_demo"
+            or (self.time_policy is not None and self.time_policy.offset_seconds)
+            or self.memory.quote_time_offset(self.feed) != 0
         ):
             raise MarketDataError(
-                "Quote correction does not verify candle timestamps; history is blocked",
+                "An explicit dated candle policy is required; quote correction is insufficient",
                 "history_time_unverified",
             )
         if timeframe not in TIMEFRAMES or not 1 <= page_bars <= 5000:
@@ -214,7 +217,21 @@ class Collector:
             raise ValueError("History range must be positive, ordered and not in the future")
         if end_sec - start_sec > 31 * 86400:
             raise ValueError("Import at most 31 days per request")
+        offset, provenance = 0, {}
+        if history_policy is not None:
+            try:
+                history_policy.require_scope(self.binding.server, symbol, timeframe,
+                                             start_sec, end_sec, self.clock())
+            except ValueError:
+                raise MarketDataError("History policy scope or date interval is invalid",
+                                      "history_time_policy_invalid") from None
+            offset = history_policy.offset_seconds
+            provenance = dict(time_offset_seconds=offset, time_policy=hashlib.sha256(
+                history_policy.model_dump_json().encode()).hexdigest())
         self.contract(symbol)
+        self.guard()
+        self.memory.bind_history_time(self.feed, symbol, timeframe, start_sec, end_sec,
+                                      offset, history_policy)
         seconds = TIMEFRAMES[timeframe]
         terminal_tf = getattr(self.terminal, "TIMEFRAME_" + timeframe)
         cursor, inserted, duplicate, open_skipped = start_sec, 0, 0, 0
@@ -226,18 +243,20 @@ class Collector:
                     self.terminal.copy_rates_range,
                     symbol,
                     terminal_tf,
-                    datetime.fromtimestamp(cursor, timezone.utc),
-                    datetime.fromtimestamp(page_end - 1, timezone.utc),
+                    datetime.fromtimestamp(cursor + offset, timezone.utc),
+                    datetime.fromtimestamp(page_end - 1 + offset, timezone.utc),
                 )
                 batch = []
                 for row in raw:
-                    opening = int(row["time"])
+                    raw_opening = int(row["time"])
+                    opening = raw_opening - offset
                     if opening < cursor or opening >= page_end:
                         raise MarketDataError("Broker returned a candle outside requested bounds")
                     candle = Candle(
                         symbol=symbol,
                         timeframe=timeframe,
                         open_time=opening,
+                        **(dict(raw_open_time=raw_opening, **provenance) if history_policy else {}),
                         open=float(row["open"]),
                         high=float(row["high"]),
                         low=float(row["low"]),
@@ -270,8 +289,14 @@ class Collector:
                 "open_bars_skipped": open_skipped,
                 "potential_gaps": gaps,
                 "completeness": "unverified",
+                "time_offset_seconds": offset,
+                "time_policy": provenance.get("time_policy"),
+                "time_verification": "operator_attested" if history_policy else "fixture_default_utc",
                 "execution_allowed": False,
             }
+        except MarketDataError as error:
+            self.memory.set_status(self.feed, "blocked", error.code, self.clock())
+            raise
         except Exception:
             self.memory.set_status(
                 self.feed, "blocked", "History import interrupted; retry safely", self.clock()

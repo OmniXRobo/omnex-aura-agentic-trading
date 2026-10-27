@@ -344,7 +344,7 @@ def test_m2_17_market_schema_upgrades_existing_foundation(tmp_path):
     with store.connect() as db:
         assert [
             r[0] for r in db.execute("SELECT version FROM schema_version ORDER BY version")
-        ] == [1, 2, 5]
+        ] == [1, 2, 5, 6]
 
 
 def test_m2_18_quote_and_candle_models_no_nan():

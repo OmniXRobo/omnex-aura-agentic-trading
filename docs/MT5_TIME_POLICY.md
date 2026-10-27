@@ -62,3 +62,7 @@ Nonzero quote corrections BLOCK historical imports, including D1. Quote observat
 verify candle time encoding, request boundaries, historical DST or session alignment. A
 separate dated history policy and broker comparison is still needed before enabling that
 path. No automatic quote correction is reused for candles.
+
+Update for 0.4.4: an independently reviewed, dated intraday history policy is now
+implemented; see [history policy](MT5_HISTORY_TIME_POLICY.md). Quote policy alone still
+does not authorize history conversion, and no UTC/DST rule is inferred by the probe.
