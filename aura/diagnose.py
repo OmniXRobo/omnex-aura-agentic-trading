@@ -97,6 +97,9 @@ def main():
         description="Read-only demo terminal diagnostics; no database writes"
     )
     parser.add_argument("--symbol", required=True)
+    parser.add_argument("--candle-time-probe", action="store_true",
+                        help="Read three recent candle/tick samples; no history authorization")
+    parser.add_argument("--timeframe", choices=["M1", "M5", "M15", "H1", "D1"], default="M1")
     parser.add_argument("--quote-time-policy", help="Reviewed local JSON policy; never auto-detected")
     args = parser.parse_args()
     try:
@@ -112,10 +115,22 @@ def main():
     server = os.getenv("AURA_MT5_EXPECTED_SERVER", "")
     if login and not login.isdigit():
         parser.error("Expected login must be numeric; enter it only in the VPS environment")
+    if args.candle_time_probe and (not login.isdigit() or not server):
+        parser.error("Candle probe requires an explicit expected demo login and server")
+    if args.candle_time_probe and time_policy is not None:
+        parser.error("Candle probe reports raw timestamps; omit the quote policy flag")
     port = importlib.import_module("MetaTrader5")
     if not port.initialize(path=path):
         raise SystemExit("MT5 initialization failed")
     try:
+        if args.candle_time_probe:
+            from .candle_probe import probe_candle_time
+            from .collector import AccountBinding
+
+            print(json.dumps(probe_candle_time(
+                port, args.symbol, AccountBinding(int(login), server), args.timeframe,
+            ), indent=2, allow_nan=False))
+            return
         print(
             json.dumps(
                 report_terminal(

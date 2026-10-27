@@ -144,3 +144,8 @@ requires operator-run diagnostics and a successful collection result.
 Timestamp regression gate: `tests/test_time_policy.py` T01–T11 checks normalization,
 provenance, persistence, strict five-second freshness, scope/expiry, history blocking,
 and stream isolation. This is fixture evidence, not broker acceptance.
+
+Candle timestamp evidence: `tests/test_candle_probe.py` C01–C12 checks independent
+quote/candle relationships, bounded reads, identity checks, malformed data, range
+disagreement, safe errors, clock regression and a Windows CLI fixture with no files
+created. No fixture result verifies a broker timezone or authorizes history ingestion.

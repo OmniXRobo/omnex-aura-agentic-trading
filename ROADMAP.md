@@ -37,3 +37,7 @@ real external providers remain disabled/unimplemented. See docs/AGENT_GATEWAY.md
 M2 timestamp continuation: scoped expiring quote corrections preserve raw time and policy
 evidence. UTC remains default. Nonzero correction blocks historical imports pending
 independent candle-time verification. Actual VPS acceptance remains pending.
+
+PR #7 is merged; its Linux/Windows CI and dependency audits passed. A read-only candle
+time probe now collects bounded position/range comparisons independently of quote
+correction. Actual candle timing, DST rules and history acceptance remain unverified.
