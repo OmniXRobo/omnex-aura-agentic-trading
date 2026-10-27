@@ -81,11 +81,18 @@ class ResearchConfig(ResearchModel):
 class BacktestRequest(ResearchModel):
     dataset: Dataset
     config: ResearchConfig
+    evaluation_start: int | None = Field(default=None, gt=0, le=4102444800, strict=True)
 
     @model_validator(mode="after")
     def positive_executable_prices(self):
         if any(bar.low <= self.config.slippage for bar in self.dataset.bars):
             raise ValueError("Slippage would produce a non-positive executable quote")
+        if self.evaluation_start is not None and not (
+            self.dataset.bars[0].open_time
+            <= self.evaluation_start
+            <= self.dataset.bars[-1].open_time
+        ):
+            raise ValueError("Evaluation start must lie within the dataset")
         return self
 
 
@@ -179,7 +186,13 @@ def run_backtest(request: BacktestRequest):
     halted, skipped = False, 0
     for index, bar in enumerate(dataset.bars):
         # Only the previous CLOSED candle may trigger entry at this bar's open.
-        if position is None and index and not halted and proposals[index - 1]:
+        if (
+            position is None
+            and index
+            and not halted
+            and proposals[index - 1]
+            and (request.evaluation_start is None or bar.open_time >= request.evaluation_start)
+        ):
             previous = dataset.bars[index - 1]
             if (
                 bar.open_time != previous.open_time + dataset.interval_seconds
@@ -257,7 +270,8 @@ def run_backtest(request: BacktestRequest):
     digest = hashlib.sha256(canonical.encode()).hexdigest()
     return {
         "request_hash": digest,
-        "engine_version": "bar-research-v1",
+        "engine_version": "bar-research-v2",
+        "evaluation_start": request.evaluation_start,
         "dataset_label": dataset.label,
         "data_source": dataset.source,
         "strategy": config.strategy,
@@ -277,7 +291,66 @@ def run_backtest(request: BacktestRequest):
     }
 
 
+class ResearchConflict(ValueError):
+    pass
+
+
+EXPOSURE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS research_exposures (
+ request_hash TEXT PRIMARY KEY, scope TEXT NOT NULL, start_time INTEGER NOT NULL,
+ end_time INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS exposure_index_version (version INTEGER PRIMARY KEY);
+CREATE INDEX IF NOT EXISTS research_exposure_range ON research_exposures(scope,start_time,end_time);
+"""
+
+
+def _index_exposures(db):
+    """Conservatively migrate previously stored research before reserving unseen data."""
+    if db.execute("SELECT version FROM exposure_index_version WHERE version=1").fetchone():
+        return
+    for row in db.execute("SELECT payload FROM records WHERE kind='backtest'"):
+        try:
+            request = BacktestRequest.model_validate(json.loads(row[0])["request"])
+        except Exception:
+            raise ResearchConflict(
+                "Historical backtest evidence cannot be indexed safely"
+            ) from None
+        scope = request.dataset.symbol
+        start = request.evaluation_start or request.dataset.bars[0].open_time
+        end = request.dataset.bars[-1].open_time + request.dataset.interval_seconds
+        digest = hashlib.sha256(
+            json.dumps(request.model_dump(mode="json"), sort_keys=True, allow_nan=False).encode()
+        ).hexdigest()
+        db.execute(
+            "INSERT OR IGNORE INTO research_exposures VALUES (?,?,?,?)", (digest, scope, start, end)
+        )
+    db.execute("INSERT INTO exposure_index_version VALUES (1)")
+
+
 def persist_backtest(store: Store, request: BacktestRequest):
+    scope = request.dataset.symbol
+    start = request.evaluation_start or request.dataset.bars[0].open_time
+    end = request.dataset.bars[-1].open_time + request.dataset.interval_seconds
+    request_hash = hashlib.sha256(
+        json.dumps(request.model_dump(mode="json"), sort_keys=True, allow_nan=False).encode()
+    ).hexdigest()
+    with store.connect() as db:
+        db.executescript(EXPOSURE_SCHEMA)
+        db.execute("BEGIN IMMEDIATE")
+        _index_exposures(db)
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='validation_ledger'").fetchone():
+            if db.execute(
+                "SELECT id FROM validation_ledger WHERE scope=? AND holdout_start<? "
+                "AND holdout_end>? LIMIT 1",
+                (scope, end, start),
+            ).fetchone():
+                raise ResearchConflict(
+                    "Reserved final holdout cannot be used in an exploratory backtest"
+                )
+        db.execute(
+            "INSERT OR IGNORE INTO research_exposures VALUES (?,?,?,?)",
+            (request_hash, scope, start, end),
+        )
     result = run_backtest(request)
     identifier = store.record(
         "historical", "backtest", {"request": request.model_dump(mode="json"), "result": result}

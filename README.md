@@ -1,4 +1,4 @@
-# OMNEX AURA 0.3.0 — offline research checkpoint
+# OMNEX AURA 0.3.1 — research validation checkpoint
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -91,3 +91,13 @@ PR #2 is merged and all its Windows/Linux CI and dependency checks passed; real 
 MT5 connection verification is still pending. The research pipeline does not require
 that connection or external provider credentials. This is a research checkpoint, not
 full M3 completion or an adaptive trading release.
+
+## Chronological validation (M3 continuation)
+
+Run `python -m aura.validate --request examples/validation_fixture.json --data-dir ./data`
+for a synthetic expanding-window experiment with a separately reserved final holdout.
+The admin API is `/v1/research/validate`. Exact retries replay saved evidence; retuning
+on overlapping final intervals is blocked. Previously explored backtest intervals cannot
+be called an unseen holdout. See docs/CHRONOLOGICAL_VALIDATION.md for the boundary details,
+IID-bootstrap limitations and scope. All promotion/execution remains disabled. PR #3 is
+merged and all its Linux/Windows CI and dependency-audit jobs passed.

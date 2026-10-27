@@ -8,11 +8,12 @@ from pydantic import BaseModel, ConfigDict
 
 from . import __version__
 from .agents import AGENT_ROLES, Orchestrator, Snapshot
-from .backtest import BacktestRequest, persist_backtest
+from .backtest import BacktestRequest, ResearchConflict, persist_backtest
 from .config import Settings
 from .market_store import MarketStore
 from .risk import Proposal
 from .store import Store
+from .validation import HoldoutConflict, ValidationRequest, persist_validation
 
 
 class KillRequest(BaseModel):
@@ -88,7 +89,17 @@ def create_app(settings: Settings | None = None):
 
     @app.post("/v1/research/backtest", dependencies=[Depends(admin)])
     def backtest(request: BacktestRequest):
-        return persist_backtest(app.state.store, request)
+        try:
+            return persist_backtest(app.state.store, request)
+        except ResearchConflict as error:
+            raise HTTPException(409, str(error)) from None
+
+    @app.post("/v1/research/validate", dependencies=[Depends(admin)])
+    def validate(request: ValidationRequest):
+        try:
+            return persist_validation(app.state.store, request)
+        except (HoldoutConflict, ResearchConflict) as error:
+            raise HTTPException(409, str(error)) from None
 
     @app.post("/v1/risk/preview", dependencies=[Depends(admin)])
     def risk(proposal: Proposal):

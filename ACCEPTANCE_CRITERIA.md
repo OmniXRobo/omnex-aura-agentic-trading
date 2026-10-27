@@ -100,3 +100,17 @@ These prove local research-engine behavior, not market profitability. Monte Carl
 fresh out-of-sample/walk-forward evaluation, confidence intervals, macro/news input,
 ML calibration and broker-data preparation remain pending. Backtest results always have
 promotion_eligible=false and execution_allowed=false.
+
+## M3 chronological-validation continuation
+
+V01..V23 in `tests/test_validation.py` cover 28 scenarios: disjoint/ordered splits,
+invalid size/gap/limits, fixed risk/cost policies across candidates, test-only entries
+with causal warmup, final-data perturbation invariance of training selection, bounded
+window exits, NO TRADE selection, seeded bootstrap/invalid inputs, restart-safe cached
+replay, retuning/overlap/failure/concurrency protection, exploratory and legacy exposure
+checks, corrupt-evidence fail-closed behavior, genuinely fresh future intervals,
+admin API/409 behavior, CLI replay, disabled promotion and label/timeframe bypass rejection.
+
+These tests do not establish market profitability or full ML leakage safety. Final
+holdout protection operates within this persisted application workflow. IID-resampling
+outputs remain research diagnostics. Live/provider/VPS acceptance gates are unchanged.

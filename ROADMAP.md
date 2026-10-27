@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | 1 Foundation | PR #1 merged; Linux/Windows CI and audit passed | Production DB/auth and actual Windows VPS service validation |
 | 2 Market Data | PR #2 merged; collector and Linux/Windows CI verified with fixtures | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
-| 3 Trading Research | Causal features, two baseline candidates and offline cost-aware backtests implemented | Real dataset preparation, macro/news, walk-forward/OOS and statistical validation |
+| 3 Trading Research | PR #3 merged; baseline backtests plus chronological validation/holdout ledger implemented | Real datasets, macro/news, robust statistical/market stress and ML leakage controls |
 | 4 Multi-Agent AI | Local framework checkpoint only | OpenAI/Claude/Grok adapters, secure credentials, provider cost/failure tests |
 | 5 Virtual Autopilot | Not started | Cost-aware fills, accounting, 2/3-day durable schedule |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
@@ -24,3 +24,8 @@ can continue with fixtures; no demo order execution is enabled.
 M3 research fixtures may run before Windows broker acceptance. They must remain labelled
 synthetic/in-sample and cannot promote a strategy or enable broker execution. See
 reports/MILESTONE_3.md and docs/RESEARCH_BACKTEST.md for scope and evidence.
+
+The M3 validation continuation adds expanding-window candidate selection, disjoint test
+windows, a separately reserved final holdout, persistent exposure/reuse protection and
+explicitly limited IID trade-resampling diagnostics. It does not complete statistical
+strategy validation or enable promotion. See docs/CHRONOLOGICAL_VALIDATION.md.
