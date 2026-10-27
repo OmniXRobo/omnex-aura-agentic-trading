@@ -66,7 +66,7 @@ estimate. These are deliberately simple baseline research candidates for future 
 challenger comparisons; they are not the final continuously learning trading policy.
 
 Parameters, dataset, source label and assumptions are hashed and stored with each run.
-The result records engine version bar-research-v1. Source-control history must be retained
+The result records engine version bar-research-v2. Source-control history must be retained
 alongside each experiment; an input hash alone is not a model artifact or complete lineage.
 
 ## Entry, exit and costs
@@ -124,3 +124,13 @@ gaps/slippage, risk rounding, swap approximation, no-trade behavior, single-posi
 handling, drawdown halting, metric edge cases, reproducibility, historical isolation,
 channel construction, API authorization, nonpositive fill rejection and runnable fixtures.
 This is engineering validation on synthetic data, not trading-strategy validation.
+
+## Evaluation-window extension and exposure tracking (0.3.1)
+
+`evaluation_start` optionally inhibits entries before a declared bar/time while retaining
+past bars solely for causal warmup. It does not on its own prove that later bars are
+unseen. Chronological validation applies the selection/window rules separately.
+Persisted exploratory runs now track their evaluated intervals. Protected final holdout
+intervals are refused by the exploratory route; previously scored exploratory data cannot
+be reserved as a fresh final holdout. See CHRONOLOGICAL_VALIDATION.md. Historical reports
+from version 0.3.0 retain their original engine version and results.
