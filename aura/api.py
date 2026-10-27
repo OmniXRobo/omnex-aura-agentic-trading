@@ -2,13 +2,14 @@ import hmac
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict
 
 from . import __version__
 from .agents import AGENT_ROLES, Orchestrator, Snapshot
 from .config import Settings
+from .market_store import MarketStore
 from .risk import Proposal
 from .store import Store
 
@@ -24,6 +25,7 @@ def create_app(settings: Settings | None = None):
     @asynccontextmanager
     async def lifespan(app):
         app.state.store = Store(settings.data_dir)
+        app.state.market = MarketStore(app.state.store)
         yield
 
     app = FastAPI(
@@ -97,5 +99,19 @@ def create_app(settings: Settings | None = None):
     @app.get("/v1/memory/{environment}", dependencies=[Depends(identity)])
     def memory(environment: Literal["historical", "virtual", "demo"]):
         return app.state.store.records(environment)
+
+    @app.get("/v1/market/feeds", dependencies=[Depends(identity)])
+    def feeds():
+        return app.state.market.statuses()
+
+    @app.get("/v1/market/events", dependencies=[Depends(identity)])
+    def events(
+        feed: str = Query(min_length=1, max_length=160),
+        symbol: str = Query(min_length=1, max_length=64),
+        kind: Literal["quote", "candle", "contract"] = "quote",
+        limit: int = Query(default=100, ge=1, le=500),
+        timeframe: Literal["M1", "M5", "M10", "M15", "M30", "H1", "H4", "D1"] | None = None,
+    ):
+        return app.state.market.events(feed, symbol, kind, limit, timeframe)
 
     return app
