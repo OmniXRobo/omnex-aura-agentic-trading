@@ -52,3 +52,36 @@ prevention, VPS reboot and strategy rollback must be separately implemented and 
 Full-project acceptance from master section 20 is NOT satisfied: providers, broker
 connection, virtual autopilot, adaptive strategy evolution, dashboard, APK and deployment
 have not been delivered. Local persistence and risk-boundary tests are a foundation.
+
+## M2 market-data acceptance mapping
+
+Tests in `tests/test_market_data.py` map to `test_m2_01` through `test_m2_21`:
+
+| Test ID | Acceptance criterion |
+| --- | --- |
+| M2-01 | Gold discovery uses currency metadata; official symbol_info.name is mapped correctly |
+| M2-02 | Invalid currency, tick/volume/point and swap metadata rejected |
+| M2-03 | Real/contest and mismatched account/server are rejected |
+| M2-04 | Disconnect/account switch during read cannot store a quote |
+| M2-05 | Future/stale/crossed/nonfinite quotes rejected |
+| M2-06 | Quote deduplication, same-ms changes and restart persistence |
+| M2-07 | One feed stream cannot mix different accounts |
+| M2-08 | Heartbeat freshness expires without collector updates |
+| M2-09 | UTC history paging and repeat import deduplication |
+| M2-10 | Open-bar exclusion and potential gap reporting |
+| M2-11 | Candle revisions preserved; latest version read |
+| M2-12 | Naive/reversed/future/oversized history requests rejected |
+| M2-13 | Malformed page rejected before inserting its validated batch |
+| M2-14 | Missing metadata/ticks fail closed |
+| M2-15 | Empty history is bounded and never claimed complete |
+| M2-16 | Market API authentication and read/query constraints |
+| M2-17 | Schema v2 preserves foundation data and is repeatable |
+| M2-18 | Quote/candle numeric/range validation |
+| M2-19 | Interrupted history import safely resumes/deduplicates |
+| M2-20 | Broker/source data remain separate |
+| M2-21 | Market-event UPDATE/DELETE rejected by DB triggers |
+
+Fixtures do not establish broker compatibility. The MT5 port has never been used to
+submit an order. All original trading-specific statistical and execution acceptance
+gates remain pending. PR #1 now supplies actual Windows/Linux backend CI evidence;
+this does not prove Windows VPS/MT5 terminal integration.

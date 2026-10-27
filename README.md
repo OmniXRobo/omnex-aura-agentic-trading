@@ -1,4 +1,4 @@
-# OMNEX AURA 0.1.0 — foundation checkpoint
+# OMNEX AURA 0.2.0 — read-only market data checkpoint
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -65,3 +65,17 @@ exists. Risk previews consume caller-supplied facts and cannot authorize a broke
 See ARCHITECTURE.md, ROADMAP.md, ACCEPTANCE_CRITERIA.md, docs/MT5_DEMO_PLAN.md,
 docs/OPERATIONS.md and reports/MILESTONE_1.md. The full input specification is preserved
 in docs/MASTER_SPECIFICATION.md.
+
+## Read-only market data (M2)
+
+The Windows collector now verifies an explicitly bound demo account/server and validates
+gold symbol contracts. It stores sampled fresh bid/ask quotes and paginated closed candles
+in historical memory, with duplicate prevention and preserved candle revisions. This is
+not a lossless tick feed. It does not generate tradeable signals or submit broker orders.
+See [Windows setup](docs/MT5_READ_ONLY_SETUP.md) for exact local commands and limitations.
+`GET /v1/market/feeds` and `/v1/market/events` provide authenticated read access.
+
+Source is public by the owner's instruction. PR #1 was merged and its Linux/Windows CI
+and dependency audit passed. The original M1 report is a historical checkpoint; current
+progress is recorded in reports/MILESTONE_2.md. M2 still needs actual Windows/broker
+acceptance. No provider credentials or broker passwords are required for fixture tests.
