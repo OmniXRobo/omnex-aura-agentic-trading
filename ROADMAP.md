@@ -6,7 +6,7 @@
 | 2 Market Data | PR #2 merged; collector and Linux/Windows CI verified with fixtures | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
 | 3 Trading Research | PR #3 merged; baseline backtests plus chronological validation/holdout ledger implemented | Real datasets, macro/news, robust statistical/market stress and ML leakage controls |
 | 4 Multi-Agent AI | Provider port, review workflow, durable quota/health and local/fake reliability tests implemented | Official OpenAI/Claude/Grok adapters, secure credentials, verified models and real API tests |
-| 5 Virtual Autopilot | Not started | Cost-aware fills, accounting, 2/3-day durable schedule |
+| 5 Virtual Autopilot | Persistent virtual market ledger implemented with fixtures | Accepted live-data consumer, automated decisions, full order lifecycle and 2/3-day schedule |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
 | 7 MT5 Demo Autopilot | Not started / orders disabled | Owner demo activation, independent risk, reservation, reconciliation, fault recovery |
 | 8 Dashboard and Android | Not started | Backend auth sessions, web UI, Flutter app, actual APK build |
@@ -47,3 +47,13 @@ server/symbol/timeframe and a dated interval, with raw/UTC provenance and restar
 interpretation reservations. MT5 imports require explicit history evidence, including
 offset-zero policies. D1 remains unsupported by this correction path. Actual VPS
 import/replay acceptance, broader dated evidence and DST rules remain pending.
+
+Owner VPS evidence confirmed four M1 candles imported and replayed as zero insertions /
+four duplicates for the narrowly reviewed historical interval after PR #9. This does not
+complete market-data acceptance: current quote collection, broader history, sessions and
+lossless ticks remain pending. No screenshot/raw private data is committed.
+
+M5 foundation (0.5.0): virtual.db sessions, decimal cost accounting, bid/ask market fills,
+SL/TP on available quotes, atomic receipts/events and durable intent/position protection.
+All strategy automation, production deployment and two-/three-day scheduling remain
+pending. See docs/VIRTUAL_LEDGER.md for assumptions and remaining gates.

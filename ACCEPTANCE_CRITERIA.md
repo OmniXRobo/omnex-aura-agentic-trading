@@ -154,3 +154,9 @@ Dated history correction: `tests/test_history_time_policy.py` H01–H14 checks s
 queries, persistent raw/UTC provenance, page replay, interval/scope gates, closed bars,
 UTC/raw overlap conflicts, restart/legacy/concurrency protection, append-only evidence,
 and the Windows CLI with a fake terminal. Actual broker import acceptance is pending.
+
+Virtual foundation: `tests/test_virtual_ledger.py` V01–V18 covers bid/ask long/short
+accounting, gap stops, restart and concurrent replay, risk/volume/geometry/news/stop/data
+gates, rollover costs, immutable configuration, memory separation, durable drawdown halt,
+isolated CLI behavior, transactional rollback and append-only input/event evidence.
+Fixture evidence does not satisfy autonomous forward-trading or broker acceptance.
