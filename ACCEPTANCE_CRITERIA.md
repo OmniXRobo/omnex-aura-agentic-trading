@@ -197,3 +197,13 @@ environment/type restrictions, suspension/archive, append-only persistence, atom
 rollback, prohibited inputs, authentication, dashboard projection, actual CLI startup,
 bounded history and isolated fixture behavior. Browser/VPS acceptance, semantic strategy
 evidence matching, shadow trials and promotion are separate pending gates.
+
+## Backup/recovery continuation
+
+BKP01–BKP14 (`tests/test_backup.py`) cover three-memory roundtrip, forced restored stop,
+source preservation, heartbeat reset, committed WAL inclusion, runner/writer exclusion,
+corruption and unexpected sidecar rejection, destination protection, missing/unsupported
+safety/schema state, partial-failure cleanup, manifest traversal, actual CLI with spaced
+paths, copy-time mutation, concurrent destination reservation and isolated fixture behavior.
+Windows operational restore, encryption/off-site/scheduling and power-loss acceptance
+remain separate pending gates.
