@@ -47,6 +47,11 @@ supervised fail-closed stop and independent broker-side protective stops.
 
 ## Backup and restore
 
+The 0.7.1 [backup CLI](BACKUP_RECOVERY.md) now implements local verified snapshots and
+isolated stopped restores. The guidance below describes the original foundation; the
+new CLI supersedes the statement that automated backup scripts are unimplemented.
+Encrypted scheduling and off-site recovery remain pending.
+
 Before demo activation, implement and test encrypted scheduled backups and a separate
 backup destination. For the current prototype stop all writers and workers, checkpoint
 SQLite WAL, and copy all three database files together with the release version; or use

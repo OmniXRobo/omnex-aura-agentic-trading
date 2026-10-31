@@ -1,4 +1,4 @@
-# OMNEX AURA 0.7.0 — Local operations dashboard
+# OMNEX AURA 0.7.1 — Local operations dashboard
 
 Open the browser app on your Windows VPS after updating:
 
@@ -162,3 +162,9 @@ user-logon startup. This does not start the collector or enable trading.
 Versioned candidate descriptions, historical evidence references and review requests
 are documented in [strategy registry setup](docs/STRATEGY_REGISTRY.md). Try the isolated
 `python -m aura.registry_fixture` smoke check. No strategy is automatically approved.
+
+### Backup and recovery
+
+[Verified backup/recovery instructions](docs/BACKUP_RECOVERY.md) cover three-memory
+snapshots, manifest verification and isolated emergency-stopped restores. Test locally
+with `python -m aura.backup_fixture`; it does not back up operational data.

@@ -102,3 +102,11 @@ validation, and champion/challenger selection, shadow execution, promotion/rollb
 automated self-healing remain pending. Owner VPS screenshot confirms the 0.6.1 runner
 startup message; ongoing heartbeat, scheduled logon/reboot and collector acceptance are
 not established by that screenshot. See docs/STRATEGY_REGISTRY.md.
+
+0.7.1 recovery continuation: three-memory SQLite backup API snapshots under coordinated
+write locks, bounded-format manifests with hashes/counts/schema checks, verification and
+non-overwriting isolated restore with all emergency stops ON, cleared copied heartbeat
+state and restoration audit. Windows fixture/real-data recovery, encrypted/off-site
+backups, scheduling, retention and power-loss acceptance remain pending. Owner screenshot
+confirms the 0.7.0 registry fixture succeeded on the VPS; it is not strategy performance
+or new dashboard interaction acceptance. See docs/BACKUP_RECOVERY.md.
