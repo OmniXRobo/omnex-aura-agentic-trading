@@ -85,3 +85,11 @@ PR #12 is merged and the owner ran its logical-clock evaluator fixture successfu
 This does not count as real multi-day market performance. Operational collectors,
 evaluators and service supervision are not started by the dashboard. External AI,
 strategy registry/promotion, complete virtual entry automation and Android remain pending.
+
+0.6.1 operations continuation: independent local queue/diagnostic runner, OS directory
+lock, durable redacted polling heartbeat, bounded evaluator failures, absolute dashboard
+data directory and optional current-user Windows logon task. Owner screenshots confirm
+0.6.0 login and empty dashboard rendering. Full page interactions, actual persistent
+feed mapping, Windows task/logon/reboot recovery and fresh quote consumption remain
+pending. Collector/consumer supervision, backups, external AI, model registry, strategy
+entry automation, demo orders and Android are not completed by this batch.

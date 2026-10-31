@@ -1,5 +1,11 @@
 # Operations and recovery
 
+Current 0.6.1 continuation: see [local runner setup](OPERATIONS_RUNNER.md) for
+research/diagnostic polling, heartbeat and optional Windows user-logon startup. The
+environment/source-hosting sections below describe the original foundation checkpoint.
+The repository is now public at the owner's request; never recreate or change its visibility
+using those historical handoff instructions. Windows service acceptance remains pending.
+
 ## Current environment
 
 Development was performed on Linux with Python 3.12, Git and Node available. This is not
