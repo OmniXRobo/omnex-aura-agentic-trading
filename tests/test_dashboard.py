@@ -44,7 +44,7 @@ def test_dash02_summary_requires_auth_and_handles_empty_database(client):
     assert sum(a["implementation"] == "local_task" for a in data["agents"]) == 3
     assert data["runtime"]["android"] == "not_built"
     assert not data["dashboard_entries_enabled"]
-    assert data["version"] == "0.6.1"
+    assert data["version"] == "0.7.0"
 
 
 def test_dash03_viewer_cannot_stop_or_clear_control(client):

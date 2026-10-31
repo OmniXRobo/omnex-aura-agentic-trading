@@ -93,3 +93,12 @@ data directory and optional current-user Windows logon task. Owner screenshots c
 feed mapping, Windows task/logon/reboot recovery and fresh quote consumption remain
 pending. Collector/consumer supervision, backups, external AI, model registry, strategy
 entry automation, demo orders and Android are not completed by this batch.
+
+0.7.0 registry continuation: immutable research versions/parent lineage, historical
+evidence reference digests, atomic append-only review requests/suspensions/archive,
+optimistic concurrency/idempotency, authenticated API/local CLI and read-only Strategy
+Laboratory view. This is a research registry only: evidence references are not strategy
+validation, and champion/challenger selection, shadow execution, promotion/rollback and
+automated self-healing remain pending. Owner VPS screenshot confirms the 0.6.1 runner
+startup message; ongoing heartbeat, scheduled logon/reboot and collector acceptance are
+not established by that screenshot. See docs/STRATEGY_REGISTRY.md.

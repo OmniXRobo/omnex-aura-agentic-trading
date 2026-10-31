@@ -14,6 +14,7 @@ from .backtest import BacktestRequest, ResearchConflict, persist_backtest
 from .config import Settings
 from .dashboard_data import dashboard_overview
 from .market_store import MarketStore
+from .registry import RegistryAction, RegistryConflict, StrategyRegistry, StrategyVersion
 from .review_types import ReviewContext
 from .reviews import ReviewCoordinator, default_gateway
 from .risk import Proposal
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None):
     async def lifespan(app):
         app.state.store = Store(settings.data_dir)
         app.state.market = MarketStore(app.state.store)
+        app.state.registry = StrategyRegistry(app.state.store)
         app.state.reviews = ReviewCoordinator(app.state.store, default_gateway(app.state.store))
         yield
 
@@ -95,6 +97,34 @@ def create_app(settings: Settings | None = None):
         if role != "admin":
             raise HTTPException(403, "Administrator required")
         return role
+
+    @app.get("/v1/strategies", dependencies=[Depends(identity)])
+    def strategies(limit: int = Query(default=20, ge=1, le=100)):
+        try:
+            return app.state.registry.list(limit)
+        except RegistryConflict as error:
+            raise HTTPException(409, str(error)) from None
+
+    @app.get("/v1/strategies/{identifier}", dependencies=[Depends(identity)])
+    def strategy(identifier: str):
+        try:
+            return app.state.registry.get(identifier)
+        except RegistryConflict as error:
+            raise HTTPException(409, str(error)) from None
+
+    @app.post("/v1/strategies")
+    def create_strategy(request: StrategyVersion, actor=Depends(admin)):
+        try:
+            return app.state.registry.create(request, actor)
+        except RegistryConflict as error:
+            raise HTTPException(409, str(error)) from None
+
+    @app.post("/v1/strategies/{identifier}/actions")
+    def strategy_action(identifier: str, request: RegistryAction, actor=Depends(admin)):
+        try:
+            return app.state.registry.apply(identifier, request, actor)
+        except RegistryConflict as error:
+            raise HTTPException(409, str(error)) from None
 
     @app.get("/health")
     def health():
@@ -180,7 +210,7 @@ def create_app(settings: Settings | None = None):
     @app.get("/v1/dashboard/overview")
     def overview(role=Depends(identity)):
         try:
-            return dashboard_overview(app.state.store, app.state.market, role, __version__, settings.mode)
+            return dashboard_overview(app.state.store, app.state.market, role, __version__, settings.mode) | dict(strategies=app.state.registry.list())
         except Exception:
             raise HTTPException(503, "Dashboard evidence or safety state unavailable") from None
 
