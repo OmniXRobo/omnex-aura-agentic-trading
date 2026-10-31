@@ -1,4 +1,4 @@
-# OMNEX AURA 0.5.1 — Persistent quote-to-virtual observation
+# OMNEX AURA 0.5.2 — Durable virtual evaluation checkpoints
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -137,3 +137,6 @@ Run `python -m aura.virtual_fixture` for an isolated synthetic smoke exercise.
 
 The [quote consumer](docs/VIRTUAL_QUOTE_CONSUMER.md) validates persisted feed evidence
 and resumes with idempotent ledger receipts. It cannot submit new entry intents.
+
+The [virtual evaluator](docs/VIRTUAL_EVALUATION.md) creates restart-safe rolling two-/
+three-day diagnostics. It never promotes strategies or enables trading.
