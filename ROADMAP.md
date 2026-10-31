@@ -9,7 +9,7 @@
 | 5 Virtual Autopilot | Persistent virtual market ledger implemented with fixtures | Accepted live-data observation, automated decisions, full lifecycle and supervised 2/3-day trial |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
 | 7 MT5 Demo Autopilot | Not started / orders disabled | Owner demo activation, independent risk, reservation, reconciliation, fault recovery |
-| 8 Dashboard and Android | Not started | Backend auth sessions, web UI, Flutter app, actual APK build |
+| 8 Dashboard and Android | Local authenticated operations dashboard implemented | Actual Windows browser acceptance, production auth/TLS, Flutter app and APK |
 | 9 Continuous Research | Not started | Authorized sources, licensing and isolated experimentation |
 | 10 Release and Operations | Documentation/framework only | Full testing, supervised Windows recovery, backups, monitoring, signed release |
 
@@ -73,3 +73,15 @@ or renewed. Fresh source-to-virtual observation remains pending when quoting res
 immutable reports, accounting/quality metrics and foreground watch polling. Logical-clock
 fixtures are not a real multi-day trial. Automatic strategy changes/promotion, process
 supervision and actual 48/72-hour observation acceptance remain pending.
+
+The owner prioritized a visible app before further registry work. The 0.6.0 batch adds
+a packaged local dashboard, bounded authenticated summary API, admin stop-only control,
+loopback launcher and dashboard/security tests. It displays real saved records with
+explicit fixture/stale/empty states; no trading or provider functions are fabricated.
+Managed browser preview cannot access the Python environment, so browser rendering is
+unverified here. Actual Windows browser acceptance remains pending.
+
+PR #12 is merged and the owner ran its logical-clock evaluator fixture successfully.
+This does not count as real multi-day market performance. Operational collectors,
+evaluators and service supervision are not started by the dashboard. External AI,
+strategy registry/promotion, complete virtual entry automation and Android remain pending.
