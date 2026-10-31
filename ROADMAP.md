@@ -6,7 +6,7 @@
 | 2 Market Data | PR #2 merged; collector and Linux/Windows CI verified with fixtures | Actual Windows MT5 connection, broker acceptance and lossless tick archive |
 | 3 Trading Research | PR #3 merged; baseline backtests plus chronological validation/holdout ledger implemented | Real datasets, macro/news, robust statistical/market stress and ML leakage controls |
 | 4 Multi-Agent AI | Provider port, review workflow, durable quota/health and local/fake reliability tests implemented | Official OpenAI/Claude/Grok adapters, secure credentials, verified models and real API tests |
-| 5 Virtual Autopilot | Persistent virtual market ledger implemented with fixtures | Accepted live-data consumer, automated decisions, full order lifecycle and 2/3-day schedule |
+| 5 Virtual Autopilot | Persistent virtual market ledger implemented with fixtures | Accepted live-data observation, automated decisions, full lifecycle and supervised 2/3-day trial |
 | 6 Self-Healing | Not started | Drift, isolated experiments, fresh OOS and shadow promotion/rollback |
 | 7 MT5 Demo Autopilot | Not started / orders disabled | Owner demo activation, independent risk, reservation, reconciliation, fault recovery |
 | 8 Dashboard and Android | Not started | Backend auth sessions, web UI, Flutter app, actual APK build |
@@ -64,3 +64,12 @@ The 0.5.1 consumer adds pinned source/contract/account interpretation, stale-gap
 durable cursors and receipt recovery. It observes/manages existing virtual positions
 only; new entries and autonomous strategy/evaluation scheduling remain unimplemented.
 Actual fresh quote collection and source-to-virtual VPS acceptance are still pending.
+
+PR #11 is merged and its consumer fixture ran successfully on the owner VPS. The actual
+feed was stale during the reported market closure; no new timestamp offset was inferred
+or renewed. Fresh source-to-virtual observation remains pending when quoting resumes.
+
+0.5.2 adds durable overlapping two-/three-day diagnostic plans, bounded index/catch-up,
+immutable reports, accounting/quality metrics and foreground watch polling. Logical-clock
+fixtures are not a real multi-day trial. Automatic strategy changes/promotion, process
+supervision and actual 48/72-hour observation acceptance remain pending.

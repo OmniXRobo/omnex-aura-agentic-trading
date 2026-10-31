@@ -166,3 +166,10 @@ binding, corrected-time provenance/expiry, stale-gap and out-of-order dispositio
 heartbeat/reception gates, crash-after-commit recovery, concurrent/same-ms delivery,
 existing virtual exit marking, isolated fixture and persisted-data observer CLI restart.
 Fixture-backed demo-source emulation is not real broker connectivity or forward testing.
+
+Virtual evaluation: `tests/test_virtual_evaluation.py` EV01–EV16 covers due/grace and
+half-open boundaries, rolling lookbacks, cost accounting, restart/concurrent dedupe,
+transactional failure recovery, missing/sparse observations, bounded index/catch-up,
+clock regression, immutable plans/reports, source gaps, late evidence, checkpoint
+integrity and isolated fixture/CLI behavior. Promotion/entry/execution stay false.
+No fixture substitutes for a real supervised two-/three-day observation trial.
