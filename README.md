@@ -1,4 +1,14 @@
-# OMNEX AURA 0.5.2 — Durable virtual evaluation checkpoints
+# OMNEX AURA 0.6.0 — Local operations dashboard
+
+Open the browser app on your Windows VPS after updating:
+
+```powershell
+.\.venv\Scripts\python.exe -m aura.dashboard --open-browser
+```
+
+Use the local console token at **http://127.0.0.1:8000/dashboard**. Keep the token private.
+See [dashboard setup and scope](docs/WEB_DASHBOARD.md). No broker execution is enabled.
+
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.

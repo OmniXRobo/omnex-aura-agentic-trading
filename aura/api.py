@@ -1,8 +1,10 @@
 import hmac
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict
 
@@ -10,12 +12,18 @@ from . import __version__
 from .agents import AGENT_ROLES, Orchestrator, Snapshot
 from .backtest import BacktestRequest, ResearchConflict, persist_backtest
 from .config import Settings
+from .dashboard_data import dashboard_overview
 from .market_store import MarketStore
 from .review_types import ReviewContext
 from .reviews import ReviewCoordinator, default_gateway
 from .risk import Proposal
 from .store import Store
 from .validation import HoldoutConflict, ValidationRequest, persist_validation
+
+
+class DashboardStopRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    enabled: Literal[True] = True
 
 
 class KillRequest(BaseModel):
@@ -41,6 +49,34 @@ def create_app(settings: Settings | None = None):
         redoc_url=None,
         openapi_url=None,
     )
+    @app.middleware("http")
+    async def response_security(request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+            "img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+        )
+        return response
+
+    web_root = Path(__file__).parent / "web"
+
+    @app.get("/", include_in_schema=False)
+    @app.get("/dashboard", include_in_schema=False)
+    def dashboard_page():
+        return FileResponse(web_root / "index.html", media_type="text/html")
+
+    @app.get("/dashboard/app.js", include_in_schema=False)
+    def dashboard_script():
+        return FileResponse(web_root / "app.js", media_type="text/javascript")
+
+    @app.get("/dashboard/app.css", include_in_schema=False)
+    def dashboard_style():
+        return FileResponse(web_root / "app.css", media_type="text/css")
+
     bearer = HTTPBearer(auto_error=False)
 
     def identity(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
@@ -140,5 +176,17 @@ def create_app(settings: Settings | None = None):
         timeframe: Literal["M1", "M5", "M10", "M15", "M30", "H1", "H4", "D1"] | None = None,
     ):
         return app.state.market.events(feed, symbol, kind, limit, timeframe)
+
+    @app.get("/v1/dashboard/overview")
+    def overview(role=Depends(identity)):
+        try:
+            return dashboard_overview(app.state.store, app.state.market, role, __version__, settings.mode)
+        except Exception:
+            raise HTTPException(503, "Dashboard evidence or safety state unavailable") from None
+
+    @app.post("/v1/dashboard/stop")
+    def dashboard_stop(request: DashboardStopRequest, actor=Depends(admin)):
+        app.state.store.set_kill(True, actor)
+        return {"kill_switch": True, "execution_allowed": False}
 
     return app

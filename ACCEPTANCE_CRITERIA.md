@@ -173,3 +173,9 @@ transactional failure recovery, missing/sparse observations, bounded index/catch
 clock regression, immutable plans/reports, source gaps, late evidence, checkpoint
 integrity and isolated fixture/CLI behavior. Promotion/entry/execution stay false.
 No fixture substitutes for a real supervised two-/three-day observation trial.
+
+Dashboard: `tests/test_dashboard.py` DASH01–DASH10 covers public shell without secrets,
+asset/security headers, auth, empty/seeded projections, viewer/admin restrictions,
+stop-only action, unavailable safety state, fixture-directory protection, text-only
+dynamic rendering, loopback launch and package/runtime version agreement. HTTP and
+syntax checks do not substitute for actual Windows browser or Android acceptance.
