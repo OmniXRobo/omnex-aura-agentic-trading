@@ -104,5 +104,8 @@ blocked writers, active runner exclusion, corruption/manifest/path checks, copy-
 mutation, empty destination collision rejection, cleanup, preserved records, cleared
 heartbeats and forced safety stop. Windows-specific permissions, operational data size,
 disk-full/power-loss recovery and actual VPS restore acceptance remain pending.
-Future schema versions beyond the current supported 1–9 set are rejected; migrations
+Future schema versions beyond the current supported 1–10 set are rejected; migrations
 require a separately reviewed compatibility update. Live-money trading remains disabled.
+
+Version 0.8.0 adds schema 10 for virtual diagnostics; backup/restore preserves those
+reports and their cursor. Older binaries reject the newer schema rather than guessing.

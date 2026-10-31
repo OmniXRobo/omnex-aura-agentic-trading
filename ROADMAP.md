@@ -110,3 +110,12 @@ state and restoration audit. Windows fixture/real-data recovery, encrypted/off-s
 backups, scheduling, retention and power-loss acceptance remain pending. Owner screenshot
 confirms the 0.7.0 registry fixture succeeded on the VPS; it is not strategy performance
 or new dashboard interaction acceptance. See docs/BACKUP_RECOVERY.md.
+
+0.8.0 diagnostic continuation: immutable virtual evaluation triage with pinned policy,
+source digests, atomic bounded cursor/audit, runner polling with bounded failure blocking,
+local/API batch entry points and read-only Learning Review page. This is deterministic
+evidence review only: no causal attribution, statistical drift, strategy changes,
+challenger generation, promotion or risk changes. Backup compatibility includes schema
+10. Owner screenshot confirms the 0.7.1 synthetic recovery fixture succeeded; actual
+operational backup/restore and new browser/diagnostic VPS acceptance remain pending.
+See docs/VIRTUAL_DIAGNOSTICS.md; full self-healing and remaining release gates are open.

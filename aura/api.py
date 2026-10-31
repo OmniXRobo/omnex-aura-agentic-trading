@@ -13,6 +13,7 @@ from .agents import AGENT_ROLES, Orchestrator, Snapshot
 from .backtest import BacktestRequest, ResearchConflict, persist_backtest
 from .config import Settings
 from .dashboard_data import dashboard_overview
+from .diagnostics import DiagnosticError, VirtualDiagnostics, read_diagnostics
 from .market_store import MarketStore
 from .registry import RegistryAction, RegistryConflict, StrategyRegistry, StrategyVersion
 from .review_types import ReviewContext
@@ -126,6 +127,20 @@ def create_app(settings: Settings | None = None):
         except RegistryConflict as error:
             raise HTTPException(409, str(error)) from None
 
+    @app.get("/v1/virtual/diagnostics", dependencies=[Depends(identity)])
+    def virtual_diagnostics(limit: int = Query(default=20, ge=1, le=100)):
+        try:
+            return read_diagnostics(app.state.store, limit)
+        except DiagnosticError as error:
+            raise HTTPException(409, str(error)) from None
+
+    @app.post("/v1/virtual/diagnostics/run", dependencies=[Depends(admin)])
+    def run_diagnostics():
+        try:
+            return VirtualDiagnostics(app.state.store).run_batch()
+        except Exception:
+            raise HTTPException(409, "Diagnostic evidence or storage failure; review required") from None
+
     @app.get("/health")
     def health():
         return {"status": "ok", "version": __version__}
@@ -210,7 +225,7 @@ def create_app(settings: Settings | None = None):
     @app.get("/v1/dashboard/overview")
     def overview(role=Depends(identity)):
         try:
-            return dashboard_overview(app.state.store, app.state.market, role, __version__, settings.mode) | dict(strategies=app.state.registry.list())
+            return dashboard_overview(app.state.store, app.state.market, role, __version__, settings.mode) | dict(strategies=app.state.registry.list(), diagnostics=read_diagnostics(app.state.store))
         except Exception:
             raise HTTPException(503, "Dashboard evidence or safety state unavailable") from None
 

@@ -207,3 +207,12 @@ safety/schema state, partial-failure cleanup, manifest traversal, actual CLI wit
 paths, copy-time mutation, concurrent destination reservation and isolated fixture behavior.
 Windows operational restore, encryption/off-site/scheduling and power-loss acceptance
 remain separate pending gates.
+
+## Virtual diagnostic continuation
+
+DIA01–DIA11 (`tests/test_diagnostics.py`) cover real evaluator integration, restart and
+source preservation, bounded/concurrent batches, review-only loss/cost findings, prohibited
+and malformed input, append-only reports/source digests, atomic batch rollback, runner
+failure blocking/redaction, API/dashboard auth, missing safety/empty evidence, actual CLI,
+backup/restore schema 10 compatibility and the isolated fixture. No causal or statistical
+drift accuracy, strategy improvement or real forward-performance acceptance is claimed.

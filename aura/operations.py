@@ -7,6 +7,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from .diagnostics import VirtualDiagnostics
 from .store import Store
 from .virtual_evaluation import EvaluationPlan, VirtualEvaluator
 from .worker import process_one
@@ -59,6 +60,8 @@ class OperationsRunner:
         self.store, self.evaluators, self.clock = store, list(evaluators), clock
         self.failures = [0] * len(self.evaluators)
         self.cycles, self.jobs = 0, 0
+        self.diagnostics = VirtualDiagnostics(store)
+        self.diagnostic_failures = 0
         with store.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS operations_runtime (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)')
 
@@ -67,7 +70,10 @@ class OperationsRunner:
                        jobs_processed=self.jobs, execution_allowed=False, entries_enabled=False,
                        tasks=[dict(role='research_queue', state='polling' if state in ('running', 'degraded') else state)] + [
                            dict(role='virtual_evaluation', state=state if state not in ('running', 'degraded') else 'blocked' if failures >= 3 else
-                                'retry_pending' if failures else 'polling') for failures in self.failures])
+                                'retry_pending' if failures else 'polling') for failures in self.failures] + [
+                           dict(role='virtual_diagnostics', state=state if state not in ('running', 'degraded') else
+                                'blocked' if self.diagnostic_failures >= 3 else
+                                'retry_pending' if self.diagnostic_failures else 'polling')])
         with self.store.connect() as db:
             db.execute('INSERT OR REPLACE INTO operations_runtime VALUES (1,?)', (json.dumps(payload),))
 
@@ -86,8 +92,15 @@ class OperationsRunner:
                 self.failures[index] += 1
             else:
                 self.failures[index] = 0
+        if self.diagnostic_failures < 3:
+            try:
+                self.diagnostics.run_batch()
+            except Exception:
+                self.diagnostic_failures += 1
+            else:
+                self.diagnostic_failures = 0
         self.cycles += 1
-        self.publish('degraded' if any(self.failures) else 'running')
+        self.publish('degraded' if any(self.failures) or self.diagnostic_failures else 'running')
 
 
 def main():

@@ -34,7 +34,7 @@ def inspect_database(path):
         if db.execute('PRAGMA integrity_check').fetchall() != [('ok',)]:
             raise ValueError('Memory database integrity failure')
         versions = [row[0] for row in db.execute('SELECT version FROM schema_version ORDER BY version')]
-        if 1 not in versions or any(type(v) is not int or v < 1 or v > 9 for v in versions):
+        if 1 not in versions or any(type(v) is not int or v < 1 or v > 10 for v in versions):
             raise ValueError('Unsupported memory schema version')
         if db.execute("SELECT value FROM controls WHERE name='kill_switch'").fetchone() not in [(0,), (1,)]:
             raise ValueError('Missing or invalid safety control')
@@ -44,7 +44,7 @@ def inspect_database(path):
             raise ValueError('Missing foundation tables')
         # Only known table names enter SQL; no arbitrary manifest SQL is executed.
         selected = required | {'market_events', 'virtual_sessions', 'virtual_events',
-                               'virtual_eval_reports', 'strategy_versions', 'strategy_events'}
+                               'virtual_eval_reports', 'virtual_diagnostics', 'strategy_versions', 'strategy_events'}
         counts = {name: db.execute(f'SELECT count(*) FROM {name}').fetchone()[0]
                   for name in sorted(selected & tables)}
     return dict(size=path.stat().st_size, sha256=file_digest(path), schemas=versions, counts=counts)
