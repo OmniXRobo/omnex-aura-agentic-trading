@@ -1,4 +1,4 @@
-# OMNEX AURA 0.7.1 — Local operations dashboard
+# OMNEX AURA 0.8.0 — Local operations dashboard
 
 Open the browser app on your Windows VPS after updating:
 
@@ -168,3 +168,9 @@ are documented in [strategy registry setup](docs/STRATEGY_REGISTRY.md). Try the 
 [Verified backup/recovery instructions](docs/BACKUP_RECOVERY.md) cover three-memory
 snapshots, manifest verification and isolated emergency-stopped restores. Test locally
 with `python -m aura.backup_fixture`; it does not back up operational data.
+
+### Virtual learning review
+
+[Virtual diagnostics](docs/VIRTUAL_DIAGNOSTICS.md) triage saved evaluation evidence and
+record research follow-up without changing strategies. The operations runner processes
+new reports automatically. Test in isolation with `python -m aura.diagnostic_fixture`.
