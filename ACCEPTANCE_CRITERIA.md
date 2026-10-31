@@ -179,3 +179,12 @@ asset/security headers, auth, empty/seeded projections, viewer/admin restriction
 stop-only action, unavailable safety state, fixture-directory protection, text-only
 dynamic rendering, loopback launch and package/runtime version agreement. HTTP and
 syntax checks do not substitute for actual Windows browser or Android acceptance.
+
+## Operations runner continuation
+
+OPS01–OPS10 (`tests/test_operations.py`) cover durable queue restart/idempotency under
+an active stop, cross-process OS locking/release, stale/future heartbeat detection,
+bounded/redacted evaluator failures, recovery, missing safety state, actual CLI startup,
+admin/viewer path privacy, real evaluator report deduplication and abrupt-process restart.
+Windows logon task registration, actual VPS recovery and collector supervision remain
+manual pending acceptance gates.

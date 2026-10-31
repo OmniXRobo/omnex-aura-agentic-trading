@@ -25,7 +25,9 @@ def main():
         parser.error("Choose a local port from 1024 to 65535")
     configured = os.getenv("AURA_ADMIN_TOKEN", "")
     token = configured or secrets.token_urlsafe(32)
-    settings = Settings(args.data_dir, token, os.getenv("AURA_VIEWER_TOKEN", ""),
+    directory = args.data_dir.resolve()
+    print(f"Persistent data directory: {directory}", flush=True)
+    settings = Settings(directory, token, os.getenv("AURA_VIEWER_TOKEN", ""),
                         os.getenv("AURA_MODE", "research"))
     url = f"http://127.0.0.1:{args.port}/dashboard"
     print(f"OMNEX AURA dashboard: {url}", flush=True)

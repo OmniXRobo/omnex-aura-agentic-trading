@@ -4,6 +4,7 @@ import json
 import time
 
 from .agents import AGENT_ROLES
+from .operations import runtime_status
 
 
 def table_exists(db, name):
@@ -62,5 +63,8 @@ def dashboard_overview(store, market, role, version, mode):
                 feeds=market.statuses(now)[:20], sessions=sessions, evaluations=evaluations,
                 evaluation_plans=plans, agents=agents, recent_research=runs, jobs=jobs, audit=audit,
                 limits=dict(sessions=20, evaluations=20, feeds=20),
-                runtime=dict(supervisor="not_configured", android="not_built",
+                storage=dict(directory=str(store.directory.resolve()) if role == "admin" else "configured local directory",
+                             market_observations="saved_records_only"),
+                operations=runtime_status(store),
+                runtime=dict(supervisor="local_polling_runner_available", android="not_built",
                              external_ai="not_integrated", strategy_entries="not_implemented"))
