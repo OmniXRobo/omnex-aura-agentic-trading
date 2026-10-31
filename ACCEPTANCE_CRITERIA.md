@@ -160,3 +160,9 @@ accounting, gap stops, restart and concurrent replay, risk/volume/geometry/news/
 gates, rollover costs, immutable configuration, memory separation, durable drawdown halt,
 isolated CLI behavior, transactional rollback and append-only input/event evidence.
 Fixture evidence does not satisfy autonomous forward-trading or broker acceptance.
+
+Quote consumer: `tests/test_virtual_consumer.py` CQ01–CQ19 covers source/contract/account
+binding, corrected-time provenance/expiry, stale-gap and out-of-order dispositions,
+heartbeat/reception gates, crash-after-commit recovery, concurrent/same-ms delivery,
+existing virtual exit marking, isolated fixture and persisted-data observer CLI restart.
+Fixture-backed demo-source emulation is not real broker connectivity or forward testing.
