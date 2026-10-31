@@ -1,4 +1,4 @@
-# OMNEX AURA 0.4.4 — Dated historical timestamp policy
+# OMNEX AURA 0.5.0 — Persistent virtual ledger foundation
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -130,3 +130,7 @@ quote/candle comparisons without changing stream bindings or authorizing imports
 
 MT5 history now requires an explicit [dated candle policy](docs/MT5_HISTORY_TIME_POLICY.md).
 Quote corrections alone never authorize candle conversion.
+
+The first [virtual market ledger](docs/VIRTUAL_LEDGER.md) provides atomic simulated
+positions, cost accounting and restart-safe receipts. It is not autonomous autopilot.
+Run `python -m aura.virtual_fixture` for an isolated synthetic smoke exercise.
