@@ -1,4 +1,4 @@
-# OMNEX AURA 0.6.1 — Local operations dashboard
+# OMNEX AURA 0.7.0 — Local operations dashboard
 
 Open the browser app on your Windows VPS after updating:
 
@@ -156,3 +156,9 @@ three-day diagnostics. It never promotes strategies or enables trading.
 See [operations runner setup](docs/OPERATIONS_RUNNER.md) for shared persistent data,
 queue polling, explicit evaluation plans, dashboard heartbeats and optional Windows
 user-logon startup. This does not start the collector or enable trading.
+
+### Research strategy registry
+
+Versioned candidate descriptions, historical evidence references and review requests
+are documented in [strategy registry setup](docs/STRATEGY_REGISTRY.md). Try the isolated
+`python -m aura.registry_fixture` smoke check. No strategy is automatically approved.

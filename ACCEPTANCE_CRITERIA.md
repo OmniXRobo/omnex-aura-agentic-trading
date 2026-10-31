@@ -188,3 +188,12 @@ bounded/redacted evaluator failures, recovery, missing safety state, actual CLI 
 admin/viewer path privacy, real evaluator report deduplication and abrupt-process restart.
 Windows logon task registration, actual VPS recovery and collector supervision remain
 manual pending acceptance gates.
+
+## Research registry continuation
+
+REG01–REG13 (`tests/test_registry.py`) cover immutable lineage/restart, exact replay,
+concurrent revision conflicts, research-only review requests, reference integrity,
+environment/type restrictions, suspension/archive, append-only persistence, atomic audit
+rollback, prohibited inputs, authentication, dashboard projection, actual CLI startup,
+bounded history and isolated fixture behavior. Browser/VPS acceptance, semantic strategy
+evidence matching, shadow trials and promotion are separate pending gates.
