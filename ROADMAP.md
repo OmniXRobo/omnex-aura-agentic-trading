@@ -57,3 +57,10 @@ M5 foundation (0.5.0): virtual.db sessions, decimal cost accounting, bid/ask mar
 SL/TP on available quotes, atomic receipts/events and durable intent/position protection.
 All strategy automation, production deployment and two-/three-day scheduling remain
 pending. See docs/VIRTUAL_LEDGER.md for assumptions and remaining gates.
+
+PR #10 is merged; the owner ran the v0.5.0 isolated virtual fixture successfully on the
+Windows VPS. This is synthetic accounting/restart evidence, not forward performance.
+The 0.5.1 consumer adds pinned source/contract/account interpretation, stale-gap audit,
+durable cursors and receipt recovery. It observes/manages existing virtual positions
+only; new entries and autonomous strategy/evaluation scheduling remain unimplemented.
+Actual fresh quote collection and source-to-virtual VPS acceptance are still pending.

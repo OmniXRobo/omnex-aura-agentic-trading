@@ -1,4 +1,4 @@
-# OMNEX AURA 0.5.0 — Persistent virtual ledger foundation
+# OMNEX AURA 0.5.1 — Persistent quote-to-virtual observation
 
 Demo-only research platform in development. Live execution is prohibited in V1.
 This checkpoint is runnable locally; it is not an autonomous trading release.
@@ -134,3 +134,6 @@ Quote corrections alone never authorize candle conversion.
 The first [virtual market ledger](docs/VIRTUAL_LEDGER.md) provides atomic simulated
 positions, cost accounting and restart-safe receipts. It is not autonomous autopilot.
 Run `python -m aura.virtual_fixture` for an isolated synthetic smoke exercise.
+
+The [quote consumer](docs/VIRTUAL_QUOTE_CONSUMER.md) validates persisted feed evidence
+and resumes with idempotent ledger receipts. It cannot submit new entry intents.
